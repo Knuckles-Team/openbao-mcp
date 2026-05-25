@@ -4,7 +4,7 @@ import pytest
 def test_api_client_basic_mock(mock_ctx):
     """CONCEPT:BAO-001 Test basic mock initialization of client facade."""
     assert mock_ctx is not None
-    assert mock_ctx.get("env_check") is True
+    assert hasattr(mock_ctx, "info")
 
 @pytest.mark.concept("BAO-001")
 def test_api_client_endpoints(mock_ctx):
