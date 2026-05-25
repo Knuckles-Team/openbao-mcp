@@ -1,0 +1,11 @@
+services:
+  openbao-mcp:
+    build: .
+    environment:
+      - OPENBAO_URL
+      - OPENBAO_TOKEN
+      - TRANSPORT=streamable-http
+      - HOST=0.0.0.0
+      - PORT=8000
+    ports:
+      - "8000:8000"

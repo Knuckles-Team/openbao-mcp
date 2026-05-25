@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "openbao_mcp": {
+      "command": "python",
+      "args": [
+        "-m",
+        "openbao_mcp.mcp_server"
+      ],
+      "env": {}
+    }
+  }
+}
