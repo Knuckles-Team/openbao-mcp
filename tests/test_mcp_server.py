@@ -12,7 +12,7 @@ def test_mcp_server_registration():
     assert mcp is not None
     
     # Verify tool registry count is greater than zero
-    assert len(mcp._tools) > 0
+    assert len(mcp._local_provider._components) > 0
 
 @pytest.mark.concept("BAO-003")
 def test_mcp_server_security_context():
