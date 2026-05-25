@@ -15,6 +15,7 @@ DEFAULT_AGENT_NAME = None
 DEFAULT_AGENT_DESCRIPTION = None
 DEFAULT_AGENT_SYSTEM_PROMPT = None
 
+
 def agent_server():
     """Start graph-based Pydantic AI agent server.
     CONCEPT:BAO-007
@@ -30,9 +31,17 @@ def agent_server():
     global DEFAULT_AGENT_NAME, DEFAULT_AGENT_DESCRIPTION, DEFAULT_AGENT_SYSTEM_PROMPT
     initialize_workspace()
     meta = load_identity()
-    DEFAULT_AGENT_NAME = os.getenv("DEFAULT_AGENT_NAME", meta.get("name", "OpenBao MCP Agent"))
-    DEFAULT_AGENT_DESCRIPTION = os.getenv("AGENT_DESCRIPTION", meta.get("description", "AI agent for OpenBao MCP operations."))
-    DEFAULT_AGENT_SYSTEM_PROMPT = os.getenv("AGENT_SYSTEM_PROMPT", meta.get("content") or build_system_prompt_from_workspace())
+    DEFAULT_AGENT_NAME = os.getenv(
+        "DEFAULT_AGENT_NAME", meta.get("name", "OpenBao MCP Agent")
+    )
+    DEFAULT_AGENT_DESCRIPTION = os.getenv(
+        "AGENT_DESCRIPTION",
+        meta.get("description", "AI agent for OpenBao MCP operations."),
+    )
+    DEFAULT_AGENT_SYSTEM_PROMPT = os.getenv(
+        "AGENT_SYSTEM_PROMPT",
+        meta.get("content") or build_system_prompt_from_workspace(),
+    )
 
     warnings.filterwarnings("ignore", message=".*urllib3.*")
     warnings.filterwarnings("ignore", category=DeprecationWarning, module="fastmcp")

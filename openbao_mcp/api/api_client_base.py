@@ -1,8 +1,9 @@
-import json
 from typing import Any
 from urllib.parse import urljoin
+
 import requests
 import urllib3
+
 
 class ApiClientBase:
     def __init__(
@@ -24,7 +25,7 @@ class ApiClientBase:
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
         if token:
-            self._session.headers.update({"Authorization": f"Bearer {token}"} )
+            self._session.headers.update({"Authorization": f"Bearer {token}"})
         elif username and password:
             self._session.auth = (username, password)
 

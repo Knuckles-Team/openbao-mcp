@@ -1,3 +1,4 @@
+"""CONCEPT:ECO-4.0 Unified ecosystem initialization dynamic check."""
 import importlib
 import inspect
 from typing import Any
@@ -5,18 +6,22 @@ from typing import Any
 __version__ = "0.15.0"
 __all__: list[str] = []
 
-CORE_MODULES = [f"openbao_mcp.api_client"]
+CORE_MODULES = ["openbao_mcp.api_client"]
 OPTIONAL_MODULES = {
-    f"openbao_mcp.agent_server": "agent",
-    f"openbao_mcp.mcp_server": "mcp",
+    "openbao_mcp.agent_server": "agent",
+    "openbao_mcp.mcp_server": "mcp",
 }
+
 
 def _expose_members(module):
     for name, obj in inspect.getmembers(module):
-        if (inspect.isclass(obj) or inspect.isfunction(obj)) and not name.startswith("_"):
+        if (inspect.isclass(obj) or inspect.isfunction(obj)) and not name.startswith(
+            "_"
+        ):
             globals()[name] = obj
             if name not in __all__:
                 __all__.append(name)
+
 
 for module_name in CORE_MODULES:
     module = importlib.import_module(module_name)
@@ -24,11 +29,13 @@ for module_name in CORE_MODULES:
 
 _loaded_optional_modules = {}
 
+
 def _import_module_safely(module_name: str):
     try:
         return importlib.import_module(module_name)
     except ImportError:
         return None
+
 
 def __getattr__(name: str) -> Any:
     if name == "_MCP_AVAILABLE":
@@ -50,6 +57,7 @@ def __getattr__(name: str) -> Any:
             return getattr(module, name)
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 def __dir__() -> list[str]:
     return sorted(list(globals().keys()) + __all__)
