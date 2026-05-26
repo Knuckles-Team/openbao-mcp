@@ -12,7 +12,7 @@ class ApiClientBase:
         token: str | None = None,
         username: str | None = None,
         password: str | None = None,
-        verify: bool = True,
+        verify: bool | str = True,
     ):
         self.base_url = base_url
         self.token = token
@@ -35,17 +35,21 @@ class ApiClientBase:
         endpoint: str,
         params: dict[str, Any] | None = None,
         data: Any | None = None,
+        headers: dict[str, str] | None = None,
     ) -> Any:
         if endpoint.startswith("http"):
             url = endpoint
         else:
             url = urljoin(self.base_url, endpoint)
 
-        headers = {"Content-Type": "application/json"}
+        req_headers = {"Content-Type": "application/json"}
+        if headers:
+            req_headers.update(headers)
+
         response = self._session.request(
             method=method,
             url=url,
-            headers=headers,
+            headers=req_headers,
             params=params,
             json=data,
         )

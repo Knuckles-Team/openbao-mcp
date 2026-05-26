@@ -35,6 +35,28 @@ Openbao MCP provides a high-performance, model-optimized interface to Openbao ca
 
 ---
 
+## ⚙️ Dynamic Tool Selection & Visibility
+
+This MCP server supports dynamic toolset selection and visibility filtering at runtime. This allows you to restrict the set of exposed tools in order to prevent blowing up the LLM's context window.
+
+You can configure tool filtering via multiple input channels:
+
+- **CLI Arguments:** Pass `--tools` or `--toolsets` (or their disabled counterparts `--disabled-tools` and `--disabled-toolsets`) during startup.
+- **Environment Variables:** Define standard environment variables:
+  - `MCP_ENABLED_TOOLS` / `MCP_DISABLED_TOOLS`
+  - `MCP_ENABLED_TAGS` / `MCP_DISABLED_TAGS`
+- **HTTP SSE Request Headers:** Pass custom headers during transport initialization:
+  - `x-mcp-enabled-tools` / `x-mcp-disabled-tools`
+  - `x-mcp-enabled-tags` / `x-mcp-disabled-tags`
+- **HTTP SSE Request Query Parameters:** Append query parameters directly to your transport connection URL:
+  - `?tools=tool1,tool2`
+  - `?tags=tag1`
+
+When query strings or parameters are supplied, an LLM-free **Knowledge Graph resolution layer** (using `DynamicToolOrchestrator`) matches query intents against known tool tags, names, or descriptions, with safe fallback and automated 24-hour background cache refreshing.
+
+
+---
+
 ## Installation
 
 Install in editable mode directly inside your active workspace:
@@ -82,8 +104,18 @@ The package is fully configurable via the environment variables listed below:
 
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
-| `OPENBAO_URL` | OpenBao Secrets URL | `http://127.0.0.1:8200` | Yes |
-| `OPENBAO_TOKEN` | Root or service account access token | `bao_root_token` | Yes |
+| `OPENBAO_URL` | The primary URL of the OpenBao server. | `http://127.0.0.1:8200` | Yes |
+| `OPENBAO_TOKEN` | Root or service account access token. | `bao_root_token` | Yes |
+| `BAO_ADDR` | Alias/fallback for the OpenBao server address. | None | No |
+| `VAULT_ADDR` | Alias/fallback for the OpenBao/Vault server address. | None | No |
+| `OPENBAO_MCP_BASE_URL` | Alternative fallback URL for user-level client endpoints. | `http://127.0.0.1:8200` | No |
+| `OPENBAO_MCP_USERNAME` | Username for username/password authentication methods. | None | No |
+| `OPENBAO_MCP_PASSWORD` | Password for username/password authentication methods. | None | No |
+| `OPENBAO_MCP_SSL_VERIFY` | Enable/disable SSL/TLS certificate verification (True/False). | `True` | No |
+| `SECRETSTOOL` | Enable/disable Secrets Engine MCP tools namespace. | `True` | No |
+| `SYSTOOL` | Enable/disable System Administration MCP tools namespace. | `True` | No |
+| `AUTHTOOL` | Enable/disable Authentication Engine MCP tools namespace. | `True` | No |
+| `SSHTOOL` | Enable/disable SSH Management MCP tools namespace. | `True` | No |
 
 A local template is supplied inside [.env.example](.env.example). Copy this file as `.env` and fill out your specific service endpoint parameters before starting execution.
 

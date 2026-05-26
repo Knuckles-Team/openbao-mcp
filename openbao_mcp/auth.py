@@ -1,4 +1,5 @@
 """CONCEPT:BAO-003 Identity credentials loader and session manager."""
+
 import os
 
 from agent_utilities.base_utilities import get_logger, to_boolean

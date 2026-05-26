@@ -1,4 +1,5 @@
 """Main FastMCP server and tool registration."""
+
 import os
 import sys
 from typing import Any
@@ -10,11 +11,14 @@ from fastmcp.utilities.logging import get_logger
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
+from openbao_mcp.mcp.mcp_auth import register_auth_tools
 from openbao_mcp.mcp.mcp_secrets import register_secrets_tools
+from openbao_mcp.mcp.mcp_ssh import register_ssh_tools
 from openbao_mcp.mcp.mcp_sys import register_sys_tools
 
 __version__ = "0.15.0"
 logger = get_logger(name="openbao_mcp")
+
 
 def get_mcp_instance() -> tuple[Any, ...]:
     load_dotenv(find_dotenv())
@@ -36,9 +40,18 @@ def get_mcp_instance() -> tuple[Any, ...]:
     if DEFAULT_SYSTOOL:
         register_sys_tools(mcp)
 
+    DEFAULT_AUTHTOOL = to_boolean(os.getenv("AUTHTOOL", "True"))
+    if DEFAULT_AUTHTOOL:
+        register_auth_tools(mcp)
+
+    DEFAULT_SSHTOOL = to_boolean(os.getenv("SSHTOOL", "True"))
+    if DEFAULT_SSHTOOL:
+        register_ssh_tools(mcp)
+
     for mw in middlewares:
         mcp.add_middleware(mw)
     return mcp, args, middlewares
+
 
 def mcp_server() -> None:
     mcp, args, middlewares = get_mcp_instance()
@@ -49,6 +62,7 @@ def mcp_server() -> None:
         mcp.run(transport="streamable-http", host=args.host, port=args.port)
     else:
         mcp.run(transport="stdio")
+
 
 if __name__ == "__main__":
     mcp_server()

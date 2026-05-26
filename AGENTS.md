@@ -3,6 +3,8 @@
 <!-- CONCEPT:BAO-001 -->
 <!-- CONCEPT:BAO-002 -->
 <!-- CONCEPT:BAO-003 -->
+<!-- CONCEPT:BAO-007 -->
+
 
 This file acts as a machine-readable README for AI coding agents collaborating on this repository.
 
@@ -84,7 +86,9 @@ pytest -v
 | `CONCEPT:BAO-001` | Core API Client Operations | Dynamic API facade client integration |
 | `CONCEPT:BAO-002` | FastMCP Tools Execution | FastMCP tool registration and stdio handling |
 | `CONCEPT:BAO-003` | Identity & Gateway Security | Credential validation and SSL verification |
+| `CONCEPT:BAO-007` | Agent Server Orchestration | Start graph-based Pydantic AI agent server |
 | `CONCEPT:ECO-4.0` | Ecosystem Compliance | Multi-package integration compliance standard |
+
 
 ---
 

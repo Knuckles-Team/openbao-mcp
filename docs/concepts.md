@@ -10,3 +10,5 @@
 | `CONCEPT:BAO-001` | Core API Client Operations | Exposes core client capability facade |
 | `CONCEPT:BAO-002` | FastMCP Tools Execution | Exposes FastMCP tool interface capabilities |
 | `CONCEPT:BAO-003` | Identity & Gateway Security | Exposes authentication, authorization, and secure transport operations |
+| `CONCEPT:BAO-007` | Agent Server Orchestration | Start graph-based Pydantic AI agent server |
+
