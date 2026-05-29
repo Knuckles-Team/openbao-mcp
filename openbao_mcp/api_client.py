@@ -2,7 +2,7 @@ from openbao_mcp.api.api_client_full import Client
 from openbao_mcp.api.api_client_secrets import Api as SecretsApi
 from openbao_mcp.api.api_client_sys import Api as SysApi
 
-__version__ = "0.17.1"
+__version__ = "0.18.0"
 
 
 class Api(SecretsApi, SysApi, Client):

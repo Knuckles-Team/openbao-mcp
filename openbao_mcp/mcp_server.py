@@ -16,7 +16,7 @@ from openbao_mcp.mcp.mcp_secrets import register_secrets_tools
 from openbao_mcp.mcp.mcp_ssh import register_ssh_tools
 from openbao_mcp.mcp.mcp_sys import register_sys_tools
 
-__version__ = "0.17.1"
+__version__ = "0.18.0"
 logger = get_logger(name="openbao_mcp")
 
 
