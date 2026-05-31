@@ -1,7 +1,7 @@
 # Openbao MCP
 
 [![Status](https://img.shields.io/badge/status-active-success)](https://github.com/genius-agents/openbao-mcp)
-[![Version](https://img.shields.io/badge/version-0.23.1-blue)](pyproject.toml)
+[![Version](https://img.shields.io/badge/version-0.23.2-blue)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 OpenBao Secrets and Encryption Key Vault orchestrator. Built with the highest architectural standards, incorporating dynamic facades, custom API routing, and FastMCP tool decoration.

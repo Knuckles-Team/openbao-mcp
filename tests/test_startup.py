@@ -6,7 +6,7 @@ def test_startup():
     # Basic import test
     import openbao_mcp
 
-    assert openbao_mcp.__version__ == "0.23.1"
+    assert openbao_mcp.__version__ == "0.23.2"
 
 
 @pytest.mark.concept("BAO-007")
