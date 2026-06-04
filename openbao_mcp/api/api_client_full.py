@@ -53,195 +53,195 @@ def VaultPluginTLSProviderContext(ctx: Any, apiTLSConfig: Any) -> Any:
 
 # Type stubs matching Vault Go types
 class Audit:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class AuthConfigInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class AuthConfigOutput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class AuthMethod:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class AuthMount:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class AutopilotServer:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class AutopilotState:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class AutopilotUpgrade:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class AutopilotZone:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class AutopilotZoneUpgradeVersions:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class CORSRequest:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class CORSResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class DeregisterPluginInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class EnableAuditOptions:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class EnableAuthOptions:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class ErrorResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class GenerateRootStatusResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class GetPluginInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class GetPluginResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class HANode:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class HAStatusResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class HealthResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class Help:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class InitRequest:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class InitResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class InitStatusResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class KVMetadata:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class KVMetadataPatchInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class KVMetadataPutInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class KVSecret:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class KVVersionMetadata:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class KeyStatus:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class LeaderResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class LifetimeWatcherInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class ListPluginsInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class ListPluginsResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class MFAConstraintAny:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class MFAMethodID:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class MFARequirement:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class MountConfigInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class MountConfigOutput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class MountInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class MountMigrationOutput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class MountMigrationStatusInfo:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class MountMigrationStatusOutput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class MountOutput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class PluginAPIClientMeta:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class PluginDetails:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class PluginType:
@@ -254,111 +254,111 @@ class PluginType:
 
 
 class RaftJoinRequest:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RaftJoinResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RegisterPluginInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RekeyInitRequest:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RekeyRetrieveResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RekeyStatusResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RekeyUpdateResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RekeyVerificationStatusResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RekeyVerificationUpdateResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class ReloadPluginInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class ReloadPluginStatusInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class ReloadStatus:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class ReloadStatusResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RenewBehavior:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RenewOutput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class Renewer:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RenewerInput:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RequestCallback:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class ResponseCallback:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class ResponseError:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class RevokeOptions:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class SSHHelperConfig:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class SSHVerifyResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class SealStatusResponse:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class SecretAuth:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class SecretWrapInfo:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class TLSConfig:
-    pass
+    raise RuntimeError("Not implemented")
 
 
 class OutputPolicyError(Exception):
@@ -376,7 +376,7 @@ class AutopilotConfig:
         return b"{}"
 
     def UnmarshalJSON(self, b: bytes) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
 
 class KVOption:
@@ -422,10 +422,10 @@ class Secret:
 
 class Request:
     def ResetJSONBody(self) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetJSONBody(self, val: Any) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def ToHTTP(self) -> Any:
         return None
@@ -433,7 +433,7 @@ class Request:
 
 class Response:
     def DecodeJSON(self, out: Any) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def Error(self) -> Any:
         return None
@@ -638,16 +638,16 @@ class LifetimeWatcher:
         return None
 
     def Renew(self) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def RenewCh(self) -> Any:
         return None
 
     def Start(self) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def Stop(self) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
 
 class TokenAuth:
@@ -1480,7 +1480,7 @@ class Client(ApiClientBase):
         self._address = actual_base_url
         self._token = token
         self._namespace = ""
-        self._headers = {}
+        self._headers: dict[str, Any] = {}
 
     @classmethod
     def NewClient(cls, c: Config) -> "Client":
@@ -1670,61 +1670,61 @@ class Client(ApiClientBase):
         return False
 
     def SetBackoff(self, backoff: Any) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetCheckRedirect(self, f: Any) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetCheckRetry(self, checkRetry: Any) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetClientTimeout(self, timeout: Any) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetCloneHeaders(self, cloneHeaders: bool) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetCloneToken(self, cloneToken: bool) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetDisableKeepAlives(self, disable: bool) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetLimiter(self, rateLimit: float, burst: int) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetLogger(self, logger: Any) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetMFACreds(self, creds: list[str]) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetMaxIdleConnections(self, idle: int) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetMaxRetries(self, retries: int) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetMaxRetryWait(self, retryWait: Any) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetMinRetryWait(self, retryWait: Any) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetOutputCurlString(self, curl: bool) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetOutputPolicy(self, isSet: bool) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetPolicyOverride(self, override: bool) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetSRVLookup(self, srv: bool) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def SetWrappingLookupFunc(self, lookupFunc: Any) -> None:
-        pass
+        raise RuntimeError("Not implemented")
 
     def WithRequestCallbacks(self, *callbacks: Any) -> "Client":
         return self

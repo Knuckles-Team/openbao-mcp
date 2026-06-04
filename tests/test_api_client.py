@@ -70,7 +70,7 @@ def test_global_utility_functions(monkeypatch):
 @pytest.mark.concept("BAO-001")
 def test_full_logical_and_kv_apis():
     client = Api(base_url="http://localhost:8200")
-    client.request = MagicMock(return_value={"data": "mocked"})
+    client.request = MagicMock(return_value={"data": "mocked"})  # type: ignore
 
     # Logical API
     client.Logical().Read("secret/foo")
@@ -124,7 +124,7 @@ def test_full_logical_and_kv_apis():
 @pytest.mark.concept("BAO-001")
 def test_full_sys_auth_and_ssh_apis():
     client = Api(base_url="http://localhost:8200")
-    client.request = MagicMock(return_value={"data": "mocked"})
+    client.request = MagicMock(return_value={"data": "mocked"})  # type: ignore
 
     # Sys API
     client.Sys().Init({"secret_shares": 5})

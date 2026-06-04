@@ -4,7 +4,7 @@ import importlib
 import inspect
 from typing import Any
 
-__version__ = "0.24.0"
+__version__ = "0.25.0"
 __all__: list[str] = []
 
 CORE_MODULES = ["openbao_mcp.api_client"]
@@ -28,7 +28,7 @@ for module_name in CORE_MODULES:
     module = importlib.import_module(module_name)
     _expose_members(module)
 
-_loaded_optional_modules = {}
+_loaded_optional_modules: dict[str, Any] = {}
 
 
 def _import_module_safely(module_name: str):
