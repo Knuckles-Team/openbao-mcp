@@ -4,7 +4,7 @@ import importlib
 import inspect
 from typing import Any
 
-__version__ = "0.30.0"
+__version__ = "0.30.1"
 __all__: list[str] = []
 
 CORE_MODULES = ["openbao_mcp.api_client"]
