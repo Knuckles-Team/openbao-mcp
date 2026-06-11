@@ -53,195 +53,195 @@ def VaultPluginTLSProviderContext(ctx: Any, apiTLSConfig: Any) -> Any:
 
 # Type stubs matching Vault Go types
 class Audit:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class AuthConfigInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class AuthConfigOutput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class AuthMethod:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class AuthMount:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class AutopilotServer:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class AutopilotState:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class AutopilotUpgrade:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class AutopilotZone:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class AutopilotZoneUpgradeVersions:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class CORSRequest:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class CORSResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class DeregisterPluginInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class EnableAuditOptions:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class EnableAuthOptions:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class ErrorResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class GenerateRootStatusResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class GetPluginInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class GetPluginResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class HANode:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class HAStatusResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class HealthResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class Help:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class InitRequest:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class InitResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class InitStatusResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class KVMetadata:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class KVMetadataPatchInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class KVMetadataPutInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class KVSecret:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class KVVersionMetadata:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class KeyStatus:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class LeaderResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class LifetimeWatcherInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class ListPluginsInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class ListPluginsResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class MFAConstraintAny:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class MFAMethodID:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class MFARequirement:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class MountConfigInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class MountConfigOutput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class MountInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class MountMigrationOutput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class MountMigrationStatusInfo:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class MountMigrationStatusOutput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class MountOutput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class PluginAPIClientMeta:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class PluginDetails:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class PluginType:
@@ -254,111 +254,111 @@ class PluginType:
 
 
 class RaftJoinRequest:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RaftJoinResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RegisterPluginInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RekeyInitRequest:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RekeyRetrieveResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RekeyStatusResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RekeyUpdateResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RekeyVerificationStatusResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RekeyVerificationUpdateResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class ReloadPluginInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class ReloadPluginStatusInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class ReloadStatus:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class ReloadStatusResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RenewBehavior:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RenewOutput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class Renewer:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RenewerInput:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RequestCallback:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class ResponseCallback:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class ResponseError:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class RevokeOptions:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class SSHHelperConfig:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class SSHVerifyResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class SealStatusResponse:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class SecretAuth:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class SecretWrapInfo:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class TLSConfig:
-    raise RuntimeError("Not implemented")
+    pass
 
 
 class OutputPolicyError(Exception):
