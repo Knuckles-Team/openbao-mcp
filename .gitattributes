@@ -1,2 +1,6 @@
 * text=auto
 *.py text eol=lf
+
+# Concept governance (CONCEPT:OS-5.42)
+docs/concept_reservations.yaml  merge=union
+docs/concepts.md                merge=union
