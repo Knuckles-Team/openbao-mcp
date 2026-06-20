@@ -1,19 +1,32 @@
 """Main FastMCP server and tool registration."""
 
-import os
 import sys
 from typing import Any
 
-from agent_utilities.base_utilities import to_boolean
-from agent_utilities.mcp_utilities import create_mcp_server, load_config
+from agent_utilities.mcp_utilities import (
+    create_mcp_server,
+    load_config,
+    register_tool_surface,
+)
 from fastmcp.utilities.logging import get_logger
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
+from openbao_mcp.api_client import Api
+from openbao_mcp.auth import get_client
 from openbao_mcp.mcp.mcp_auth import register_auth_tools
 from openbao_mcp.mcp.mcp_secrets import register_secrets_tools
 from openbao_mcp.mcp.mcp_ssh import register_ssh_tools
 from openbao_mcp.mcp.mcp_sys import register_sys_tools
+
+# Re-exported so register_tool_surface(tools_module=...) auto-discovers them as
+# module attributes (and ruff treats the imports as used).
+__all__ = [
+    "register_auth_tools",
+    "register_secrets_tools",
+    "register_ssh_tools",
+    "register_sys_tools",
+]
 
 __version__ = "0.32.0"
 logger = get_logger(name="openbao_mcp")
@@ -31,21 +44,13 @@ def get_mcp_instance() -> tuple[Any, ...]:
     async def health_check(request: Request) -> JSONResponse:
         return JSONResponse({"status": "OK"})
 
-    DEFAULT_SECRETSTOOL = to_boolean(os.getenv("SECRETSTOOL", "True"))
-    if DEFAULT_SECRETSTOOL:
-        register_secrets_tools(mcp)
-
-    DEFAULT_SYSTOOL = to_boolean(os.getenv("SYSTOOL", "True"))
-    if DEFAULT_SYSTOOL:
-        register_sys_tools(mcp)
-
-    DEFAULT_AUTHTOOL = to_boolean(os.getenv("AUTHTOOL", "True"))
-    if DEFAULT_AUTHTOOL:
-        register_auth_tools(mcp)
-
-    DEFAULT_SSHTOOL = to_boolean(os.getenv("SSHTOOL", "True"))
-    if DEFAULT_SSHTOOL:
-        register_ssh_tools(mcp)
+    register_tool_surface(
+        mcp,
+        client_cls=Api,
+        get_client=get_client,
+        service="openbao-mcp",
+        tools_module=sys.modules[__name__],
+    )
 
     for mw in middlewares:
         mcp.add_middleware(mw)
