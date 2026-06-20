@@ -134,8 +134,8 @@ The following declarative FastMCP tools are registered and available to upstream
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
 | `openbao_mcp_auth` | `AUTHTOOL` | Manage OpenBao auth operations. |
-| `openbao_mcp_kv` | `KVTOOL` | Manage OpenBao Key-Value v1 and v2 engines. |
-| `openbao_mcp_logical` | `LOGICALTOOL` | Manage OpenBao logical operations. |
+| `openbao_mcp_kv` | `SECRETSTOOL` | Manage OpenBao Key-Value v1 and v2 engines. |
+| `openbao_mcp_logical` | `SECRETSTOOL` | Manage OpenBao logical operations. |
 | `openbao_mcp_ssh` | `SSHTOOL` | Manage OpenBao SSH and SSH Helper operations. |
 | `openbao_mcp_sys` | `SYSTOOL` | Manage OpenBao sys operations. |
 
