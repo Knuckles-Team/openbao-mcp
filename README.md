@@ -127,13 +127,20 @@ A local template is supplied inside [.env.example](.env.example). Copy this file
 
 ## MCP Tools
 
-The following declarative FastMCP tools are registered and available to upstream AI agents:
+The following declarative FastMCP tools are registered and available to upstream AI agents. This table is auto-generated from the live server — do not edit by hand.
 
-| Tool Name | Description | Parameters |
-|-----------|-------------|------------|
-| `read_secret` | Retrieve secret from Vault KV engine | `path: str` |
-| `write_secret` | Write secret to Vault KV engine | `path: str, data: dict` |
-| `get_health` | Get OpenBao system health status | None |
+<!-- MCP-TOOLS-TABLE:START -->
+
+| MCP Tool | Toggle Env Var | Description |
+|----------|----------------|-------------|
+| `openbao_mcp_auth` | `AUTHTOOL` | Manage OpenBao auth operations. |
+| `openbao_mcp_kv` | `KVTOOL` | Manage OpenBao Key-Value v1 and v2 engines. |
+| `openbao_mcp_logical` | `LOGICALTOOL` | Manage OpenBao logical operations. |
+| `openbao_mcp_ssh` | `SSHTOOL` | Manage OpenBao SSH and SSH Helper operations. |
+| `openbao_mcp_sys` | `SYSTOOL` | Manage OpenBao sys operations. |
+
+_5 action-routed tools (default `MCP_TOOL_MODE=condensed`). Each is enabled unless its toggle is set false; set `MCP_TOOL_MODE=verbose` (or `both`) for the 1:1 per-operation surface. Auto-generated — do not edit._
+<!-- MCP-TOOLS-TABLE:END -->
 
 See [docs/overview.md](docs/overview.md) or [docs/concepts.md](docs/concepts.md) for deeper operational examples.
 
