@@ -28,10 +28,10 @@ openbao-mcp = "openbao_mcp.mcp_server:mcp_server"
 openbao-agent = "openbao_mcp.agent_server:agent_server"
 
 [project.entry-points."agent_utilities.skill_providers"]
-modular-contrib = "openbao_mcp.skills"
+openbao-mcp = "openbao_mcp.skills"
 
 [project.entry-points."agent_utilities.prompt_providers"]
-modular-contrib = "openbao_mcp.prompts"
+openbao-mcp = "openbao_mcp.prompts"
 
 [tool.setuptools]
 include-package-data = true
