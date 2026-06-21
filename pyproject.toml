@@ -27,6 +27,12 @@ test = [ "pytest-xdist>=3.6.0", "pytest", "pytest-asyncio", "pytest-cov",]
 openbao-mcp = "openbao_mcp.mcp_server:mcp_server"
 openbao-agent = "openbao_mcp.agent_server:agent_server"
 
+[project.entry-points."agent_utilities.skill_providers"]
+modular-contrib = "openbao_mcp.skills"
+
+[project.entry-points."agent_utilities.prompt_providers"]
+modular-contrib = "openbao_mcp.prompts"
+
 [tool.setuptools]
 include-package-data = true
 
@@ -43,7 +49,7 @@ check_untyped_defs = true
 dev = [ "pytest-timeout>=2.4.0",]
 
 [tool.setuptools.package-data]
-openbao_mcp = [ "mcp_config.json", "agent_data/**",]
+openbao_mcp = [ "mcp_config.json", "agent_data/**", "prompts/**", "skills/**",]
 
 [tool.ruff.lint]
 select = [ "E", "F", "I", "UP", "B",]
