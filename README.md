@@ -63,17 +63,59 @@ When query strings or parameters are supplied, an LLM-free **Knowledge Graph res
 
 ## Installation
 
-Install in editable mode directly inside your active workspace:
+> **Install the slim `[mcp]` extra.** For MCP-server hosting (including `uvx` /
+> container deploys), install `openbao-mcp[mcp]` — the MCP-server extra that pulls
+> only the FastMCP / FastAPI tooling (`agent-utilities[mcp]`). It deliberately
+> **excludes** the heavy agent runtime (the epistemic-graph engine, `pydantic-ai`,
+> `dspy`, `llama-index`, `tree-sitter`), so installs are dramatically smaller and
+> faster. Use the full `[agent]` extra only when you need the integrated Pydantic
+> AI agent.
+
+Pick the extra that matches what you want to run:
+
+| Extra | Installs | Use when |
+|-------|----------|----------|
+| `openbao-mcp[mcp]` | Slim MCP server only (`agent-utilities[mcp]` — FastMCP/FastAPI) | You only run the **MCP server** (smallest install / image) |
+| `openbao-mcp[agent]` | Full agent runtime (`agent-utilities[agent,logfire]` — Pydantic AI + the epistemic-graph engine) | You run the **integrated A2A agent** |
+| `openbao-mcp[all]` | Everything (`mcp` + `agent` + `logfire`) | Development / both surfaces |
 
 ```bash
-pip install -e .[all]
+# MCP server only (recommended for tool hosting — slim deps)
+uv pip install "openbao-mcp[mcp]"
+
+# Full agent runtime (Pydantic AI + epistemic-graph engine)
+uv pip install "openbao-mcp[agent]"
+
+# Everything (development)
+uv pip install "openbao-mcp[all]"      # or: python -m pip install "openbao-mcp[all]"
 ```
 
-Or via the `uv` tool:
+### Container images (`:mcp` vs `:agent`)
+
+One multi-stage `docker/Dockerfile` builds two right-sized images, selected by `--target`:
+
+| Image tag | Build target | Contents | Entrypoint |
+|-----------|--------------|----------|------------|
+| `knucklessg1/openbao-mcp:mcp` | `--target mcp` | `openbao-mcp[mcp]` — **slim**, no engine/`pydantic-ai`/`dspy`/`llama-index`/`tree-sitter` | `openbao-mcp` |
+| `knucklessg1/openbao-mcp:latest` | `--target agent` (default) | `openbao-mcp[agent]` — **full** agent runtime + epistemic-graph engine | `openbao-agent` |
 
 ```bash
-uv pip install -e .
+docker build --target mcp   -t knucklessg1/openbao-mcp:mcp    docker/   # slim MCP server
+docker build --target agent -t knucklessg1/openbao-mcp:latest docker/   # full agent
 ```
+
+`docker/mcp.compose.yml` runs the slim `:mcp` server; `docker/compose.yml` runs the
+agent (`:latest`).
+
+### Knowledge-graph database (`epistemic-graph`)
+
+The **full agent** (`[agent]` / `:latest`) embeds the **epistemic-graph** engine (pulled in
+transitively via `agent-utilities[agent]`). For production — or to share one knowledge graph
+across multiple agents — run **epistemic-graph as its own database container** and point the
+agent at it instead of embedding it. Deployment recipes (single-node + Raft HA), connection
+config, and the full database architecture (with diagrams) are documented in the
+[epistemic-graph deployment guide](https://knuckles-team.github.io/epistemic-graph/deployment/).
+The slim `[mcp]` server does **not** require the database.
 
 ---
 
@@ -176,8 +218,21 @@ graph TD
 A standard compose structure is provided inside the `docker/` folder. Build and deploy:
 
 ```bash
-docker compose -f docker/compose.yml up --build -d
+docker compose -f docker/mcp.compose.yml up -d    # slim :mcp server
+docker compose -f docker/compose.yml up --build -d # full :latest agent
 ```
+
+Or pull a prebuilt image:
+
+```bash
+docker pull knucklessg1/openbao-mcp:mcp      # slim MCP server
+docker pull knucklessg1/openbao-mcp:latest   # full agent (default)
+```
+
+> The `:mcp` tag is the **slim MCP-server image** (`docker/Dockerfile --target mcp`,
+> installing `openbao-mcp[mcp]`); the default `:latest` tag is the **full agent image**
+> (`--target agent`, `openbao-mcp[agent]`) which also bundles the Pydantic AI agent and
+> the epistemic-graph engine. See [Container images](#container-images-mcp-vs-agent).
 
 ---
 
