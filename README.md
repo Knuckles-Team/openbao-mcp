@@ -173,6 +173,8 @@ The following declarative FastMCP tools are registered and available to upstream
 
 <!-- MCP-TOOLS-TABLE:START -->
 
+#### Condensed action-routed tools (default — `MCP_TOOL_MODE=condensed`)
+
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
 | `openbao_mcp_auth` | `AUTHTOOL` | Manage OpenBao auth operations. |
@@ -181,7 +183,92 @@ The following declarative FastMCP tools are registered and available to upstream
 | `openbao_mcp_ssh` | `SSHTOOL` | Manage OpenBao SSH and SSH Helper operations. |
 | `openbao_mcp_sys` | `SYSTOOL` | Manage OpenBao sys operations. |
 
-_5 action-routed tools (default `MCP_TOOL_MODE=condensed`). Each is enabled unless its toggle is set false; set `MCP_TOOL_MODE=verbose` (or `both`) for the 1:1 per-operation surface. Auto-generated — do not edit._
+#### Verbose 1:1 API-mapped tools (`MCP_TOOL_MODE=verbose` or `both`)
+
+<details>
+<summary>75 per-operation tools — one per public API method (click to expand)</summary>
+
+| MCP Tool | Toggle Env Var | Description |
+|----------|----------------|-------------|
+| `openbao_AddHeader` | `CLIENTTOOL` | Invoke the AddHeader operation. |
+| `openbao_Address` | `CLIENTTOOL` | Invoke the Address operation. |
+| `openbao_Auth` | `CLIENTTOOL` | Invoke the Auth operation. |
+| `openbao_CheckRetry` | `CLIENTTOOL` | Invoke the CheckRetry operation. |
+| `openbao_ClearNamespace` | `CLIENTTOOL` | Invoke the ClearNamespace operation. |
+| `openbao_ClearToken` | `CLIENTTOOL` | Invoke the ClearToken operation. |
+| `openbao_ClientTimeout` | `CLIENTTOOL` | Invoke the ClientTimeout operation. |
+| `openbao_Clone` | `CLIENTTOOL` | Invoke the Clone operation. |
+| `openbao_CloneConfig` | `CLIENTTOOL` | Invoke the CloneConfig operation. |
+| `openbao_CloneHeaders` | `CLIENTTOOL` | Invoke the CloneHeaders operation. |
+| `openbao_CloneToken` | `CLIENTTOOL` | Invoke the CloneToken operation. |
+| `openbao_CloneWithHeaders` | `CLIENTTOOL` | Invoke the CloneWithHeaders operation. |
+| `openbao_CurrentWrappingLookupFunc` | `CLIENTTOOL` | Invoke the CurrentWrappingLookupFunc operation. |
+| `openbao_DisableKeepAlives` | `CLIENTTOOL` | Invoke the DisableKeepAlives operation. |
+| `openbao_Headers` | `CLIENTTOOL` | Invoke the Headers operation. |
+| `openbao_Help` | `CLIENTTOOL` | Invoke the Help operation. |
+| `openbao_HelpWithContext` | `CLIENTTOOL` | Invoke the HelpWithContext operation. |
+| `openbao_KVv1` | `CLIENTTOOL` | Invoke the KVv1 operation. |
+| `openbao_KVv2` | `CLIENTTOOL` | Invoke the KVv2 operation. |
+| `openbao_Limiter` | `CLIENTTOOL` | Invoke the Limiter operation. |
+| `openbao_Logical` | `CLIENTTOOL` | Invoke the Logical operation. |
+| `openbao_MaxIdleConnections` | `CLIENTTOOL` | Invoke the MaxIdleConnections operation. |
+| `openbao_MaxRetries` | `CLIENTTOOL` | Invoke the MaxRetries operation. |
+| `openbao_MaxRetryWait` | `CLIENTTOOL` | Invoke the MaxRetryWait operation. |
+| `openbao_MinRetryWait` | `CLIENTTOOL` | Invoke the MinRetryWait operation. |
+| `openbao_Namespace` | `CLIENTTOOL` | Invoke the Namespace operation. |
+| `openbao_NewClient` | `CLIENTTOOL` | Invoke the NewClient operation. |
+| `openbao_NewLifetimeWatcher` | `CLIENTTOOL` | Invoke the NewLifetimeWatcher operation. |
+| `openbao_NewRenewer` | `CLIENTTOOL` | Invoke the NewRenewer operation. |
+| `openbao_NewRequest` | `CLIENTTOOL` | Invoke the NewRequest operation. |
+| `openbao_OutputCurlString` | `CLIENTTOOL` | Invoke the OutputCurlString operation. |
+| `openbao_OutputPolicy` | `CLIENTTOOL` | Invoke the OutputPolicy operation. |
+| `openbao_RawRequest` | `CLIENTTOOL` | Invoke the RawRequest operation. |
+| `openbao_RawRequestWithContext` | `CLIENTTOOL` | Invoke the RawRequestWithContext operation. |
+| `openbao_SRVLookup` | `CLIENTTOOL` | Invoke the SRVLookup operation. |
+| `openbao_SSH` | `CLIENTTOOL` | Invoke the SSH operation. |
+| `openbao_SSHHelper` | `CLIENTTOOL` | Invoke the SSHHelper operation. |
+| `openbao_SSHHelperWithMountPoint` | `CLIENTTOOL` | Invoke the SSHHelperWithMountPoint operation. |
+| `openbao_SSHWithMountPoint` | `CLIENTTOOL` | Invoke the SSHWithMountPoint operation. |
+| `openbao_SetAddress` | `CLIENTTOOL` | Invoke the SetAddress operation. |
+| `openbao_SetBackoff` | `CLIENTTOOL` | Invoke the SetBackoff operation. |
+| `openbao_SetCheckRedirect` | `CLIENTTOOL` | Invoke the SetCheckRedirect operation. |
+| `openbao_SetCheckRetry` | `CLIENTTOOL` | Invoke the SetCheckRetry operation. |
+| `openbao_SetClientTimeout` | `CLIENTTOOL` | Invoke the SetClientTimeout operation. |
+| `openbao_SetCloneHeaders` | `CLIENTTOOL` | Invoke the SetCloneHeaders operation. |
+| `openbao_SetCloneToken` | `CLIENTTOOL` | Invoke the SetCloneToken operation. |
+| `openbao_SetDisableKeepAlives` | `CLIENTTOOL` | Invoke the SetDisableKeepAlives operation. |
+| `openbao_SetHeaders` | `CLIENTTOOL` | Invoke the SetHeaders operation. |
+| `openbao_SetLimiter` | `CLIENTTOOL` | Invoke the SetLimiter operation. |
+| `openbao_SetLogger` | `CLIENTTOOL` | Invoke the SetLogger operation. |
+| `openbao_SetMFACreds` | `CLIENTTOOL` | Invoke the SetMFACreds operation. |
+| `openbao_SetMaxIdleConnections` | `CLIENTTOOL` | Invoke the SetMaxIdleConnections operation. |
+| `openbao_SetMaxRetries` | `CLIENTTOOL` | Invoke the SetMaxRetries operation. |
+| `openbao_SetMaxRetryWait` | `CLIENTTOOL` | Invoke the SetMaxRetryWait operation. |
+| `openbao_SetMinRetryWait` | `CLIENTTOOL` | Invoke the SetMinRetryWait operation. |
+| `openbao_SetNamespace` | `CLIENTTOOL` | Invoke the SetNamespace operation. |
+| `openbao_SetOutputCurlString` | `CLIENTTOOL` | Invoke the SetOutputCurlString operation. |
+| `openbao_SetOutputPolicy` | `CLIENTTOOL` | Invoke the SetOutputPolicy operation. |
+| `openbao_SetPolicyOverride` | `CLIENTTOOL` | Invoke the SetPolicyOverride operation. |
+| `openbao_SetSRVLookup` | `CLIENTTOOL` | Invoke the SetSRVLookup operation. |
+| `openbao_SetToken` | `CLIENTTOOL` | Invoke the SetToken operation. |
+| `openbao_SetWrappingLookupFunc` | `CLIENTTOOL` | Invoke the SetWrappingLookupFunc operation. |
+| `openbao_Sys` | `CLIENTTOOL` | Invoke the Sys operation. |
+| `openbao_Token` | `CLIENTTOOL` | Invoke the Token operation. |
+| `openbao_WithNamespace` | `CLIENTTOOL` | Invoke the WithNamespace operation. |
+| `openbao_WithRequestCallbacks` | `CLIENTTOOL` | Invoke the WithRequestCallbacks operation. |
+| `openbao_WithResponseCallbacks` | `CLIENTTOOL` | Invoke the WithResponseCallbacks operation. |
+| `openbao_delete_secret` | `APITOOL` | Delete a secret path. |
+| `openbao_enable_mount` | `APITOOL` | Enable a secrets engine mount. |
+| `openbao_get_health` | `APITOOL` | Get OpenBao engine health status. |
+| `openbao_get_internal_openapi_spec` | `APITOOL` | Fetch dynamically compiled OpenAPI schema spec. |
+| `openbao_get_mounts` | `APITOOL` | Get mounted secret engines. |
+| `openbao_list_secrets` | `APITOOL` | List secrets under a path. |
+| `openbao_read_secret` | `APITOOL` | Read a secret key-value path. |
+| `openbao_write_secret` | `APITOOL` | Write a secret key-value path. |
+
+</details>
+
+_5 action-routed tool(s) (default) · 75 verbose 1:1 tool(s). Each is enabled unless its `<DOMAIN>TOOL` toggle is set false; `MCP_TOOL_MODE` selects the surface (`condensed` default · `verbose` 1:1 · `both`). Auto-generated — do not edit._
 <!-- MCP-TOOLS-TABLE:END -->
 
 See [docs/overview.md](docs/overview.md) or [docs/concepts.md](docs/concepts.md) for deeper operational examples.
