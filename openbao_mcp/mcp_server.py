@@ -28,7 +28,7 @@ __all__ = [
     "register_sys_tools",
 ]
 
-__version__ = "0.32.0"
+__version__ = "1.0.0"
 logger = get_logger(name="openbao_mcp")
 
 
