@@ -7,7 +7,18 @@
         "openbao_mcp.mcp_server"
       ],
       "env": {
-        "MCP_TOOL_MODE": "condensed"
+        "MCP_TOOL_MODE": "condensed",
+        "AUTHTOOL": "True",
+        "BAO_ADDR": "http://127.0.0.1:8200",
+        "OPENBAO_MCP_BASE_URL": "http://127.0.0.1:8200",
+        "OPENBAO_MCP_PASSWORD": "",
+        "OPENBAO_MCP_USERNAME": "",
+        "OPENBAO_TOKEN": "bao_root_token",
+        "OPENBAO_URL": "http://127.0.0.1:8200",
+        "SECRETSTOOL": "True",
+        "SSHTOOL": "True",
+        "SYSTOOL": "True",
+        "VAULT_ADDR": "http://127.0.0.1:8200"
       }
     }
   }
