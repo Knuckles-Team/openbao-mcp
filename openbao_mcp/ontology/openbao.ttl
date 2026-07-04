@@ -1,0 +1,111 @@
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix : <http://knuckles.team/kg#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# OpenBao / Vault secrets-platform ontology — models the CONTROL-PLANE METADATA of an
+# OpenBao (HashiCorp Vault-compatible) deployment: servers, mounted secrets/auth engines,
+# and ACL policies. All classes and properties live in the shared `:` (kg#) namespace; only
+# the owl:Ontology node gets the per-package IRI. Backs the openbao-mcp tool surface
+# (openbao_mcp_sys / openbao_mcp_auth / openbao_mcp_kv / openbao_mcp_logical).
+#
+# SECURITY INVARIANT: this ontology and its ingestion carry METADATA ONLY — mount paths,
+# engine types, policy names, server health. Secret VALUES (KV data, tokens, keys) are
+# NEVER modelled and NEVER ingested.
+
+:VaultServer a owl:Class ;
+    rdfs:label "Vault Server" ;
+    rdfs:comment "An OpenBao/Vault server (or cluster node) — its version, cluster identity and seal/HA status (openbao_mcp_sys action=health/seal_status/leader)." .
+
+:SecretMount a owl:Class ;
+    rdfs:label "Secret Mount" ;
+    rdfs:comment "A mounted secrets engine at a path (e.g. kv, transit, pki, database). METADATA only — path/type/accessor, never the secrets it stores (openbao_mcp_sys action=get_mounts)." .
+
+:AuthMount a owl:Class ;
+    rdfs:label "Auth Mount" ;
+    rdfs:comment "A mounted authentication method at a path (e.g. userpass, approle, token, oidc) — its path/type/accessor metadata." .
+
+:Policy a owl:Class ;
+    rdfs:label "Policy" ;
+    rdfs:comment "A named ACL policy governing path-level capabilities. METADATA only — policy name/identity, never the credentials it grants access to (sys/policies/acl)." .
+
+# --- links (owl:ObjectProperty) ---
+
+:mountedOn a owl:ObjectProperty ;
+    rdfs:label "mounted on" ;
+    rdfs:comment "Links a SecretMount or AuthMount to the VaultServer/cluster it is mounted on." ;
+    rdfs:range :VaultServer .
+
+:governedByPolicy a owl:ObjectProperty ;
+    rdfs:label "governed by policy" ;
+    rdfs:comment "Links a SecretMount or AuthMount to a Policy that governs access to its paths." ;
+    rdfs:range :Policy .
+
+:leaderOf a owl:ObjectProperty ;
+    rdfs:label "leader of" ;
+    rdfs:comment "Links the active VaultServer node to the cluster it leads." ;
+    rdfs:domain :VaultServer ;
+    rdfs:range :VaultServer .
+
+# --- fields (owl:DatatypeProperty) ---
+
+:mountPath a owl:DatatypeProperty ;
+    rdfs:label "mount path" ;
+    rdfs:comment "The path a secrets/auth engine is mounted at (e.g. 'secret/', 'auth/userpass/')." ;
+    rdfs:range xsd:string .
+
+:engineType a owl:DatatypeProperty ;
+    rdfs:label "engine type" ;
+    rdfs:comment "The backend type of a SecretMount or AuthMount (kv, transit, pki, database, userpass, approle, oidc)." ;
+    rdfs:range xsd:string .
+
+:accessor a owl:DatatypeProperty ;
+    rdfs:label "accessor" ;
+    rdfs:comment "The immutable accessor id OpenBao assigns to a mount (non-secret handle)." ;
+    rdfs:range xsd:string .
+
+:mountVersion a owl:DatatypeProperty ;
+    rdfs:label "mount version" ;
+    rdfs:comment "Options version of a mount (e.g. KV version 1 vs 2)." ;
+    rdfs:range xsd:string .
+
+:sealed a owl:DatatypeProperty ;
+    rdfs:label "sealed" ;
+    rdfs:comment "Whether the VaultServer is currently sealed." ;
+    rdfs:domain :VaultServer ;
+    rdfs:range xsd:boolean .
+
+:initialized a owl:DatatypeProperty ;
+    rdfs:label "initialized" ;
+    rdfs:comment "Whether the VaultServer has been initialized." ;
+    rdfs:domain :VaultServer ;
+    rdfs:range xsd:boolean .
+
+:standby a owl:DatatypeProperty ;
+    rdfs:label "standby" ;
+    rdfs:comment "Whether the VaultServer node is an HA standby (not the active leader)." ;
+    rdfs:domain :VaultServer ;
+    rdfs:range xsd:boolean .
+
+:clusterName a owl:DatatypeProperty ;
+    rdfs:label "cluster name" ;
+    rdfs:comment "The cluster identity name reported by the VaultServer." ;
+    rdfs:domain :VaultServer ;
+    rdfs:range xsd:string .
+
+:version a owl:DatatypeProperty ;
+    rdfs:label "version" ;
+    rdfs:comment "The OpenBao/Vault server version string." ;
+    rdfs:domain :VaultServer ;
+    rdfs:range xsd:string .
+
+<http://knuckles.team/kg/openbao> a owl:Ontology ;
+    rdfs:label "OpenBao Secrets Platform Ontology" ;
+    rdfs:comment """OpenBao/Vault control-plane metadata model — servers/clusters, mounted
+    secrets and auth engines, and ACL policies, with their mount and governance
+    relationships — federated into the agent-utilities knowledge-graph hub. METADATA ONLY:
+    secret values are never modelled or ingested.""" ;
+    owl:imports <http://knuckles.team/kg> .

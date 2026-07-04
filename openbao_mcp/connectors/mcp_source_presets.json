@@ -1,0 +1,14 @@
+{
+  "_comment": "Tier-1 mcp_tool source preset(s) for openbao-mcp (AU-KG.ingest.mcp-tool-connector). METADATA ONLY: syncs mounted secrets-engine metadata (path/type/accessor) into the KG as :SecretMount nodes via the openbao-mcp MCP server. NEVER ingests secret values. The Wire-First 'openbao_ingest_mounts' tool is the richer, typed path; this preset is the declarative fallback. Contributed presets win over the central MCP_TOOL_PRESETS.",
+  "openbao-mounts": {
+    "server": "openbao-mcp",
+    "tool": "openbao_mcp_sys",
+    "action": "get_mounts",
+    "records_path": "data",
+    "id_field": "accessor",
+    "title_field": "type",
+    "text_field": "description",
+    "updated_field": "",
+    "doc_type": "secret-mount"
+  }
+}

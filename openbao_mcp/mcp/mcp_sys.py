@@ -73,3 +73,33 @@ def register_sys_tools(mcp: FastMCP):
             return client.Sys().RaftAutopilotState()
 
         raise ValueError(f"Unknown sys action: {action}")
+
+    @mcp.tool(tags={"sys", "kg"})
+    async def openbao_ingest_mounts(
+        client=Depends(get_client),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> dict:
+        """Natively ingest OpenBao secrets-engine METADATA into epistemic-graph.
+
+        Lists mounted secrets engines via ``get_mounts`` and pushes them into the
+        knowledge graph as typed ``:SecretMount`` nodes (plus a ``:VaultServer`` node
+        from ``get_health`` and their ``:mountedOn`` links) via the fast engine client.
+
+        SECURITY: METADATA ONLY — mount paths, engine types, accessors and server
+        health. Secret VALUES are never read or ingested. Best-effort: returns
+        ``{"ingested": None}`` when no engine is reachable.
+        CONCEPT:AU-KG.ingest.enterprise-source-extractor.
+        """
+        if ctx:
+            await ctx.info("Ingesting OpenBao mount metadata into the KG...")
+        from openbao_mcp.kg_ingest import ingest_mounts
+
+        mounts = client.get_mounts()
+        try:
+            server_info = client.get_health()
+        except Exception:  # noqa: BLE001 — health is best-effort context
+            server_info = None
+        data = mounts.get("data") if isinstance(mounts, dict) else None
+        listed = len(data) if isinstance(data, dict) else 0
+        result = ingest_mounts(mounts, server_info=server_info)
+        return {"listed": listed, "ingested": result}
