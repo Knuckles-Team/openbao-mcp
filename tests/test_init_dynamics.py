@@ -1,10 +1,10 @@
 import pytest
 
 
-@pytest.mark.concept("BAO-001")
-@pytest.mark.concept("ECO-4.0")
+@pytest.mark.concept("BO-OS.governance.bao")
+@pytest.mark.concept("AU-ECO.messaging.native-backend-abstraction")
 def test_init_dynamics():
-    """CONCEPT:ECO-4.0 Test unified ecosystem initialization check."""
+    """CONCEPT:AU-ECO.messaging.native-backend-abstraction Test unified ecosystem initialization check."""
     import openbao_mcp
 
     assert openbao_mcp._MCP_AVAILABLE is True

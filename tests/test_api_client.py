@@ -15,16 +15,16 @@ from openbao_mcp.api.api_client_full import (
 from openbao_mcp.api_client import Api
 
 
-@pytest.mark.concept("BAO-001")
+@pytest.mark.concept("BO-OS.governance.bao")
 def test_api_client_basic_mock(mock_ctx):
-    """CONCEPT:BAO-001 Test basic mock initialization of client facade."""
+    """CONCEPT:BO-OS.governance.bao Test basic mock initialization of client facade."""
     assert mock_ctx is not None
     assert hasattr(mock_ctx, "info")
 
 
-@pytest.mark.concept("BAO-001")
+@pytest.mark.concept("BO-OS.governance.bao")
 def test_api_client_endpoints(mock_ctx):
-    """CONCEPT:BAO-001 Verify endpoint configuration on dynamic client."""
+    """CONCEPT:BO-OS.governance.bao Verify endpoint configuration on dynamic client."""
     from openbao_mcp.auth import get_client
 
     client = get_client()
@@ -32,7 +32,7 @@ def test_api_client_endpoints(mock_ctx):
     assert hasattr(client, "request")
 
 
-@pytest.mark.concept("BAO-001")
+@pytest.mark.concept("BO-OS.governance.bao")
 def test_global_utility_functions(monkeypatch):
     # IsSudoPath / SudoPaths
     assert IsSudoPath("sys/auth") is True
@@ -67,7 +67,7 @@ def test_global_utility_functions(monkeypatch):
     assert callable(tls_prov_ctx)
 
 
-@pytest.mark.concept("BAO-001")
+@pytest.mark.concept("BO-OS.governance.bao")
 def test_full_logical_and_kv_apis():
     client = Api(base_url="http://localhost:8200")
     client.request = MagicMock(return_value={"data": "mocked"})  # type: ignore
@@ -121,7 +121,7 @@ def test_full_logical_and_kv_apis():
     client.request.assert_called_with("DELETE", "/v1/custom_secret/foo")
 
 
-@pytest.mark.concept("BAO-001")
+@pytest.mark.concept("BO-OS.governance.bao")
 def test_full_sys_auth_and_ssh_apis():
     client = Api(base_url="http://localhost:8200")
     client.request = MagicMock(return_value={"data": "mocked"})  # type: ignore

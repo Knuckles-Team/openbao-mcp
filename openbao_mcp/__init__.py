@@ -1,4 +1,4 @@
-"""CONCEPT:ECO-4.0 Unified ecosystem initialization dynamic check."""
+"""CONCEPT:AU-ECO.messaging.native-backend-abstraction Unified ecosystem initialization dynamic check."""
 
 import importlib
 import inspect

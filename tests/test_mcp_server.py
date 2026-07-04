@@ -11,9 +11,9 @@ def setup_mcp_env(monkeypatch):
     monkeypatch.setenv("SSHTOOL", "True")
 
 
-@pytest.mark.concept("BAO-002")
+@pytest.mark.concept("BO-OS.governance.bao-2")
 def test_mcp_server_registration():
-    """CONCEPT:BAO-002 Test that tools register successfully."""
+    """CONCEPT:BO-OS.governance.bao-2 Test that tools register successfully."""
     from openbao_mcp.mcp_server import get_mcp_instance
 
     res = get_mcp_instance()
@@ -35,19 +35,19 @@ def test_mcp_server_registration():
     assert "tool:openbao_mcp_ssh@" in components
 
 
-@pytest.mark.concept("BAO-003")
+@pytest.mark.concept("BO-OS.identity.bao")
 def test_mcp_server_security_context():
-    """CONCEPT:BAO-003 Verify that the server registers with correct security credentials."""
+    """CONCEPT:BO-OS.identity.bao Verify that the server registers with correct security credentials."""
     from openbao_mcp.auth import get_client
 
     client = get_client()
     assert client is not None
 
 
-@pytest.mark.concept("BAO-002")
+@pytest.mark.concept("BO-OS.governance.bao-2")
 @pytest.mark.asyncio
 async def test_mcp_secrets_and_logical_tool():
-    """CONCEPT:BAO-002 Test OpenBao secrets and logical tool interaction."""
+    """CONCEPT:BO-OS.governance.bao-2 Test OpenBao secrets and logical tool interaction."""
     from openbao_mcp.mcp_server import get_mcp_instance
 
     mcp, _, _ = get_mcp_instance()
@@ -69,10 +69,10 @@ async def test_mcp_secrets_and_logical_tool():
     mock_client.Logical().Read.assert_called_with("secret/test")
 
 
-@pytest.mark.concept("BAO-002")
+@pytest.mark.concept("BO-OS.governance.bao-2")
 @pytest.mark.asyncio
 async def test_mcp_kv_tool():
-    """CONCEPT:BAO-002 Test OpenBao KV tool interaction."""
+    """CONCEPT:BO-OS.governance.bao-2 Test OpenBao KV tool interaction."""
     from openbao_mcp.mcp_server import get_mcp_instance
 
     mcp, _, _ = get_mcp_instance()
@@ -95,10 +95,10 @@ async def test_mcp_kv_tool():
     mock_client.KVv2().Get.assert_called_with(None, "foo")
 
 
-@pytest.mark.concept("BAO-002")
+@pytest.mark.concept("BO-OS.governance.bao-2")
 @pytest.mark.asyncio
 async def test_mcp_sys_tool():
-    """CONCEPT:BAO-002 Test OpenBao Sys tool interaction."""
+    """CONCEPT:BO-OS.governance.bao-2 Test OpenBao Sys tool interaction."""
     from openbao_mcp.mcp_server import get_mcp_instance
 
     mcp, _, _ = get_mcp_instance()
@@ -117,10 +117,10 @@ async def test_mcp_sys_tool():
     mock_client.Sys().SealStatus.assert_called_once()
 
 
-@pytest.mark.concept("BAO-002")
+@pytest.mark.concept("BO-OS.governance.bao-2")
 @pytest.mark.asyncio
 async def test_mcp_auth_tool():
-    """CONCEPT:BAO-002 Test OpenBao Auth tool interaction."""
+    """CONCEPT:BO-OS.governance.bao-2 Test OpenBao Auth tool interaction."""
     from openbao_mcp.mcp_server import get_mcp_instance
 
     mcp, _, _ = get_mcp_instance()
@@ -143,10 +143,10 @@ async def test_mcp_auth_tool():
     mock_client.Auth().Token().Lookup.assert_called_with("tok-1")
 
 
-@pytest.mark.concept("BAO-002")
+@pytest.mark.concept("BO-OS.governance.bao-2")
 @pytest.mark.asyncio
 async def test_mcp_ssh_tool():
-    """CONCEPT:BAO-002 Test OpenBao SSH tool interaction."""
+    """CONCEPT:BO-OS.governance.bao-2 Test OpenBao SSH tool interaction."""
     from openbao_mcp.mcp_server import get_mcp_instance
 
     mcp, _, _ = get_mcp_instance()

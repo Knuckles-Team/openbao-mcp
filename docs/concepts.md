@@ -1,14 +1,14 @@
 # Concept Registry — Openbao MCP
 
 > **Prefix**: `CONCEPT:BAO-*`
-> **Bridge**: `CONCEPT:ECO-4.0` (Unified Toolkit Ingestion)
+> **Bridge**: `CONCEPT:AU-ECO.messaging.native-backend-abstraction` (Unified Toolkit Ingestion)
 
 ## Project-Specific Concepts
 
 | Concept ID | Name | Description |
 |------------|------|-------------|
-| `CONCEPT:BAO-001` | Core API Client Operations | Exposes core client capability facade |
-| `CONCEPT:BAO-002` | FastMCP Tools Execution | Exposes FastMCP tool interface capabilities |
-| `CONCEPT:BAO-003` | Identity & Gateway Security | Exposes authentication, authorization, and secure transport operations |
-| `CONCEPT:BAO-007` | Agent Server Orchestration | Start graph-based Pydantic AI agent server |
+| `CONCEPT:BO-OS.governance.bao` | Core API Client Operations | Exposes core client capability facade |
+| `CONCEPT:BO-OS.governance.bao-2` | FastMCP Tools Execution | Exposes FastMCP tool interface capabilities |
+| `CONCEPT:BO-OS.identity.bao` | Identity & Gateway Security | Exposes authentication, authorization, and secure transport operations |
+| `CONCEPT:BO-OS.governance.bao-3` | Agent Server Orchestration | Start graph-based Pydantic AI agent server |
 

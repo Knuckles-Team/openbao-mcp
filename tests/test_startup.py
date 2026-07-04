@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.mark.concept("BAO-002")
+@pytest.mark.concept("BO-OS.governance.bao-2")
 def test_startup():
     # Basic import test
     import openbao_mcp
@@ -9,9 +9,9 @@ def test_startup():
     assert openbao_mcp.__version__ == "1.0.1"
 
 
-@pytest.mark.concept("BAO-007")
+@pytest.mark.concept("BO-OS.governance.bao-3")
 def test_agent_server_startup(monkeypatch):
-    """CONCEPT:BAO-007 Test agent server startup orchestration."""
+    """CONCEPT:BO-OS.governance.bao-3 Test agent server startup orchestration."""
     from unittest.mock import MagicMock, patch
 
     mock_parser = MagicMock()
