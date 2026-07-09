@@ -1,5 +1,6 @@
 ---
 name: secret-vault-manager
+skill_type: skill
 description: >
   Secret Vault Manager atomic skill. Performs unsealing, initialization,
   secrets engine mounting, and KV secrets write/read operations on OpenBao (Vault) using openbao-mcp.
