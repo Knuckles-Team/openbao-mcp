@@ -56,8 +56,9 @@ curl -s http://localhost:8200/v1/sys/health
 
 ```bash
 export OPENBAO_URL=http://localhost:8200
-export OPENBAO_TOKEN=bao_root_token
-export OPENBAO_MCP_SSL_VERIFY=False          # TLS disabled for local dev
+export OPENBAO_TOKEN="${OPENBAO_TOKEN:?inject a runtime secret}"
+# Select a named AgentConfig TLS profile or a runtime-only profile reference.
+# Certificate and hostname verification cannot be disabled.
 
 openbao-mcp --transport streamable-http --host 0.0.0.0 --port 8000
 ```
@@ -82,12 +83,11 @@ services:
     ports: ["8200:8200"]
 
   openbao-mcp:
-    image: knucklessg1/openbao-mcp:latest
+    image: example/openbao-mcp@sha256:<digest>
     depends_on: [openbao]
     environment:
       - OPENBAO_URL=http://openbao:8200
-      - OPENBAO_TOKEN=bao_root_token
-      - OPENBAO_MCP_SSL_VERIFY=False
+      - OPENBAO_TOKEN=${OPENBAO_TOKEN}
       - TRANSPORT=streamable-http
       - HOST=0.0.0.0
       - PORT=8000

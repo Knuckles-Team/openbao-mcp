@@ -97,6 +97,7 @@ sync:
   updated_field: ''
   pagination: null
   doc_type: secret-mount
+  tool_schema_sha256: 724f3c6488c9adc91a053d90f2723217bcb796687b1df96ec83f74846bc75ffd
   raw:
     server: openbao-mcp
     tool: openbao_mcp_sys
@@ -109,16 +110,19 @@ sync:
     doc_type: secret-mount
 provenance:
   generated_by: scripts/generate_connector_manifests.py
-  generated_at: '2026-07-09T00:00:00Z'
+  generated_at: '2026-07-18T00:00:00Z'
   source_artifacts:
   - openbao_mcp/connectors/mcp_source_presets.json
+  - openbao_mcp/connectors/tool_schema_fingerprints.json
   - openbao_mcp/ontology/openbao.ttl
   integrity:
     algorithm: urdna2015-sha256
     hash: 7fc083afb7920f12d29a561cd551a34f5204e425404676a0ddf534950bfae9dc
     triple_count: 49
   signer: ontology-manifest-generator
-  signature: b4d663365fbef46bac9aa5d26237389c8e286b60f27e1a0c56326198f7b40c81
+  signature_algorithm: ed25519
+  signing_public_key: q0Cp7bmQMqJhbofGKKw8xXC6KbFzukBDDke0UYVi8y4
+  signature: MgqYj_h0AH0ZXhvZ0k4qtSwvoghmant1myPKxDzg_AqZ5b2UDfk9kcSG8INBgO-C4Y-UJl_W_j9me_ZzmASiCg
 policy:
   pii_fields: {}
   tenant_boundary: null

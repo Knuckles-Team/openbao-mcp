@@ -1,0 +1,4 @@
+interface:
+  display_name: "Openbao MCP Operations"
+  short_description: "Help with Openbao MCP Operations tasks"
+  default_prompt: "Use $openbao-mcp-operations to complete a governed provider workflow."

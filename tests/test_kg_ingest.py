@@ -8,6 +8,9 @@ never copied into the graph. CONCEPT:AU-KG.ingest.enterprise-source-extractor.
 
 from __future__ import annotations
 
+import pytest
+from agent_utilities.knowledge_graph.memory.native_ingest import NativeIngestError
+
 from openbao_mcp.kg_ingest import (
     ingest_entities,
     ingest_mounts,
@@ -18,6 +21,7 @@ from openbao_mcp.kg_ingest import (
 class _FakeTxn:
     def __init__(self):
         self.nodes = {}
+        self.edges = []
         self.committed = False
 
     def begin(self, graph=None):
@@ -27,33 +31,27 @@ class _FakeTxn:
     def add_node(self, txn, node_id, props):
         self.nodes[node_id] = props
 
+    def add_edge(self, txn, source, target, props):
+        self.edges.append((source, target, props))
+
     def commit(self, txn):
         self.committed = True
         return True
 
 
-class _FakeEdges:
-    def __init__(self):
-        self.edges = []
-
-    def add(self, src, dst, props):
-        self.edges.append((src, dst, props))
-
-
 class _FakeClient:
     def __init__(self):
         self.txn = _FakeTxn()
-        self.edges = _FakeEdges()
 
 
 def test_ingest_entities_writes_nodes_and_edges():
     c = _FakeClient()
     res = ingest_entities(
         [
-            {"id": "a", "type": "SecretMount", "mountPath": "secret/"},
-            {"id": "b", "type": "VaultServer"},
+            {"id": "a", "node_type": "SecretMount", "mountPath": "secret/"},
+            {"id": "b", "node_type": "VaultServer"},
         ],
-        [{"source": "a", "target": "b", "type": "mountedOn"}],
+        [{"source": "a", "target": "b", "relationship": "mountedOn"}],
         client=c,
         graph="__commons__",
     )
@@ -62,7 +60,7 @@ def test_ingest_entities_writes_nodes_and_edges():
     assert set(c.txn.nodes) == {"a", "b"}
     assert c.txn.nodes["a"]["source"] == "openbao-mcp"
     assert c.txn.nodes["a"]["domain"] == "openbao"
-    assert c.edges.edges == [("a", "b", {"type": "mountedOn"})]
+    assert c.txn.edges == [("a", "b", {"relationship": "mountedOn"})]
 
 
 def test_ingest_mounts_maps_mount_and_server():
@@ -87,7 +85,7 @@ def test_ingest_mounts_maps_mount_and_server():
 
     assert res == {"nodes": 3, "edges": 2}  # server + 2 mounts, each mounted-on server
     kv = c.txn.nodes["openbao:mount:secret"]
-    assert kv["type"] == "SecretMount"
+    assert kv["node_type"] == "SecretMount"
     assert kv["engineType"] == "kv"
     assert kv["mountPath"] == "secret/"
     assert kv["accessor"] == "kv_abc123"
@@ -99,14 +97,14 @@ def test_ingest_mounts_maps_mount_and_server():
     assert "hunter2" not in kv.values()
 
     server_node = c.txn.nodes["openbao:server:vault-prod"]
-    assert server_node["type"] == "VaultServer"
+    assert server_node["node_type"] == "VaultServer"
     assert server_node["clusterName"] == "vault-prod"
     assert server_node["sealed"] is False
     assert (
         "openbao:mount:secret",
         "openbao:server:vault-prod",
-        {"type": "mountedOn"},
-    ) in c.edges.edges
+        {"relationship": "mountedOn"},
+    ) in c.txn.edges
 
 
 def test_ingest_mounts_skips_non_mount_keys():
@@ -121,17 +119,15 @@ def test_ingest_policies_maps_names_only():
     c = _FakeClient()
     res = ingest_policies(["default", "app-ro"], client=c, graph="__commons__")
     assert res == {"nodes": 2, "edges": 0}
-    assert c.txn.nodes["openbao:policy:default"]["type"] == "Policy"
+    assert c.txn.nodes["openbao:policy:default"]["node_type"] == "Policy"
     assert c.txn.nodes["openbao:policy:app-ro"]["name"] == "app-ro"
 
 
-def test_ingest_noops_without_engine():
-    # No injected client + no reachable engine -> clean no-op.
-    assert ingest_entities([{"id": "a", "type": "SecretMount"}]) is None
+def test_retired_structural_alias_is_rejected():
+    with pytest.raises(NativeIngestError, match="canonical node_type"):
+        ingest_entities([{"id": "a", "type": "SecretMount"}], client=_FakeClient())
 
 
-def test_ingest_empty_is_noop():
-    assert ingest_entities([], client=_FakeClient()) is None
-    assert ingest_mounts({}, client=_FakeClient()) is None
-    assert ingest_mounts({"data": {}}, client=_FakeClient()) is None
-    assert ingest_policies([], client=_FakeClient()) is None
+def test_empty_native_ingest_is_rejected():
+    with pytest.raises(NativeIngestError, match="at least one entity"):
+        ingest_entities([], client=_FakeClient())

@@ -48,16 +48,16 @@ uv run openbao-mcp
 
 ## Prebuilt Docker image
 
-A multi-stage, slim image is published on every release (installs
+A multi-stage runtime image is published on every release (installs
 `openbao-mcp[all]`, entrypoint `openbao-mcp`):
 
 ```bash
-docker pull knucklessg1/openbao-mcp:latest
+docker pull example/openbao-mcp@sha256:<digest>
 
 docker run --rm -i \
   -e OPENBAO_URL=http://your-openbao:8200 \
   -e OPENBAO_TOKEN=bao_root_token \
-  knucklessg1/openbao-mcp:latest        # stdio transport (default)
+  example/openbao-mcp@sha256:<digest>        # stdio transport (default)
 ```
 
 For an HTTP server with a published port, see [Deployment](deployment.md).

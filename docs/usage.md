@@ -37,7 +37,6 @@ from openbao_mcp.api_client import Api
 api = Api(
     base_url="http://127.0.0.1:8200",
     token="bao_root_token",
-    verify=True,
 )
 
 # Reads
@@ -47,8 +46,9 @@ secret = api.read_secret("secret", "app/config")
 keys = api.list_secrets("secret", "app")
 ```
 
-Build a client straight from the environment (reads `OPENBAO_URL`,
-`OPENBAO_TOKEN`, `OPENBAO_MCP_SSL_VERIFY`, and the username/password fallbacks):
+Build a client from the configured endpoint and credential references. Custom
+trust, private CA, and mTLS policy come from `TLS_PROFILE` or `TLS_PROFILE_REF`
+in AgentConfig; certificate verification is mandatory:
 
 ```python
 from openbao_mcp.auth import get_client

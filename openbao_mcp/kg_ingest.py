@@ -1,21 +1,13 @@
-"""Native epistemic-graph ingestion for OpenBao control-plane METADATA (typed nodes).
+"""Native epistemic-graph ingestion for OpenBao control-plane metadata.
 
-CONCEPT:AU-KG.ingest.enterprise-source-extractor. The openbao-mcp package natively pushes
-its control-plane metadata into the epistemic-graph knowledge graph as **typed OWL nodes**
-(``:VaultServer``, ``:SecretMount``, ``:AuthMount``, ``:Policy``) + links, using the fast
-engine client (``GraphComputeEngine()._client`` + ``txn``) — the same client the blob
-``MediaStore`` uses, NOT the heavy in-process ingestion engine.
+Only whitelisted mount paths, engine types, accessors, policy names, and server metadata
+are accepted. Secret values, credentials, tokens, and unseal material are never read or
+materialized.
 
-SECURITY INVARIANT — METADATA ONLY. This module ingests mount **paths / engine types /
-accessors**, policy **names**, and server **health/version** ONLY. It NEVER reads, maps, or
-writes secret VALUES (KV data, tokens, unseal keys, credentials). The mappers whitelist
-non-secret fields explicitly and drop everything else, so a secret can never leak into the
-graph even if a caller passes a fuller record.
-
-Entirely best-effort and dependency-/engine-guarded: with no agent-utilities KG stack or no
-reachable engine, every entry point **no-ops** (returns ``None``), so the connector keeps
-working with zero KG infrastructure. Nodes carry the shared provenance (``domain``/``source``)
-and match the classes federated by ``openbao_mcp.ontology``.
+All writes use the required ``agent_utilities.knowledge_graph.memory.native_ingest``
+primitive. Nodes use canonical ``node_type`` and edges use canonical ``relationship``;
+nodes and edges commit in one native transaction. Missing engine dependencies, rejected
+records, conflicts, and transaction failures propagate as ``NativeIngestError``.
 """
 
 from __future__ import annotations
@@ -23,83 +15,32 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from agent_utilities.knowledge_graph.memory.native_ingest import (
+    NativeIngestError,
+)
+from agent_utilities.knowledge_graph.memory.native_ingest import (
+    ingest_entities as _native_ingest_entities,
+)
+
 logger = logging.getLogger("openbao_mcp.kg")
 
 _SOURCE = "openbao-mcp"
 _DOMAIN = "openbao"
 
 
-def _client() -> tuple[Any | None, str]:
-    """Return ``(engine_client, graph_name)`` or ``(None, "")`` when unavailable."""
-    try:
-        from agent_utilities.knowledge_graph.core.graph_compute import (
-            GraphComputeEngine,
-        )
-    except Exception as e:  # noqa: BLE001 — KG stack absent
-        logger.debug("KG ingest unavailable (import): %s", e)
-        return None, ""
-    try:
-        engine = GraphComputeEngine()
-        client = getattr(engine, "_client", None)
-        if client is None:
-            return None, ""
-        graph = getattr(engine, "graph_name", None) or "__commons__"
-        return client, graph
-    except Exception as e:  # noqa: BLE001 — engine unreachable
-        logger.debug("KG ingest: engine unreachable: %s", e)
-        return None, ""
-
-
 def ingest_entities(
     entities: list[dict[str, Any]],
     relationships: list[dict[str, Any]] | None = None,
     *,
+    source: str = _SOURCE,
+    domain: str = _DOMAIN,
     client: Any | None = None,
     graph: str | None = None,
-) -> dict[str, int] | None:
-    """Write typed nodes (+ edges) into epistemic-graph via the fast engine client.
-
-    ``entities``: ``[{"id":..., "type":..., ...props}]``.
-    ``relationships``: ``[{"source":id, "target":id, "type":rel}]``.
-    Returns ``{"nodes":n, "edges":m}`` or ``None`` (no engine / failure; never raises).
-    ``client``/``graph`` may be injected (tests); otherwise resolved on demand.
-    """
-    entities = [e for e in (entities or []) if e.get("id")]
-    if not entities:
-        return None
-    if client is None:
-        client, graph = _client()
-    if client is None:
-        return None
-    graph = graph or "__commons__"
-
-    try:
-        txn = client.txn.begin(graph=graph)
-        for ent in entities:
-            props = {k: v for k, v in ent.items() if k != "id" and v is not None}
-            props.setdefault("source", _SOURCE)
-            props.setdefault("domain", _DOMAIN)
-            client.txn.add_node(txn, ent["id"], props)
-        committed = client.txn.commit(txn)
-    except Exception as e:  # noqa: BLE001 — engine/txn failure is non-fatal
-        logger.warning("KG ingest: txn failed: %s", e)
-        return None
-    if not committed:
-        logger.warning("KG ingest: txn not committed (conflict)")
-        return None
-
-    edges = 0
-    for rel in relationships or []:
-        try:
-            client.edges.add(
-                rel["source"], rel["target"], {"type": rel.get("type", "RELATED")}
-            )
-            edges += 1
-        except Exception as e:  # noqa: BLE001 — pure edge link, best-effort
-            logger.debug("KG ingest: edge skipped: %s", e)
-
-    logger.info("KG ingest: wrote %d nodes, %d edges", len(entities), edges)
-    return {"nodes": len(entities), "edges": edges}
+) -> dict[str, int]:
+    """Write canonical typed nodes and relationships in one native transaction."""
+    return _native_ingest_entities(
+        entities, relationships, source=source, domain=domain, client=client, graph=graph
+    )
 
 
 # --- mount metadata (whitelist — NEVER any secret value) -----------------------------
@@ -135,7 +76,7 @@ def _server_id(
     node_id = f"openbao:server:{cluster}"
     node = {
         "id": node_id,
-        "type": "VaultServer",
+        "node_type": "VaultServer",
         "clusterName": data.get("cluster_name"),
         "version": data.get("version"),
         "initialized": data.get("initialized"),
@@ -152,7 +93,7 @@ def ingest_mounts(
     server_info: dict[str, Any] | None = None,
     client: Any | None = None,
     graph: str | None = None,
-) -> dict[str, int] | None:
+) -> dict[str, int]:
     """Map an OpenBao ``sys/mounts`` response -> ``:SecretMount`` (+ ``:VaultServer``) nodes.
 
     ``mounts`` is the dict returned by ``get_mounts`` — keyed by mount path, each value a
@@ -160,10 +101,10 @@ def ingest_mounts(
     mapper reads path/type/accessor/version, never any secret payload.
     """
     if not mounts:
-        return None
+        raise NativeIngestError("OpenBao mount ingestion requires mount metadata")
     data = mounts.get("data") if isinstance(mounts.get("data"), dict) else mounts
     if not isinstance(data, dict):
-        return None
+        raise NativeIngestError("OpenBao mount metadata must be a mapping")
 
     entities: list[dict[str, Any]] = []
     relationships: list[dict[str, Any]] = []
@@ -183,7 +124,7 @@ def ingest_mounts(
         options = cfg.get("options") or {}
         node: dict[str, Any] = {
             "id": node_id,
-            "type": "SecretMount",
+            "node_type": "SecretMount",
             "mountPath": raw_path,
             "engineType": cfg.get("type"),
             "externalToolId": path,
@@ -196,7 +137,7 @@ def ingest_mounts(
         entities.append(node)
         if server_id is not None:
             relationships.append(
-                {"source": node_id, "target": server_id, "type": "mountedOn"}
+                {"source": node_id, "target": server_id, "relationship": "mountedOn"}
             )
 
     return ingest_entities(entities, relationships, client=client, graph=graph)
@@ -208,14 +149,14 @@ def ingest_policies(
     server_info: dict[str, Any] | None = None,
     client: Any | None = None,
     graph: str | None = None,
-) -> dict[str, int] | None:
+) -> dict[str, int]:
     """Map a list of ACL policy NAMES -> ``:Policy`` nodes (metadata only, no rules).
 
     ``policy_names`` is the list under a ``sys/policies/acl`` LIST (the ``keys``). Only the
     policy identity is ingested — never the HCL rules, which reference secret paths.
     """
     if not policy_names:
-        return None
+        raise NativeIngestError("OpenBao policy ingestion requires policy names")
     entities: list[dict[str, Any]] = []
     server_id, _ = _server_id(server_info)
     for name in policy_names:
@@ -224,7 +165,7 @@ def ingest_policies(
         node_id = f"openbao:policy:{name}"
         node: dict[str, Any] = {
             "id": node_id,
-            "type": "Policy",
+            "node_type": "Policy",
             "name": name,
             "externalToolId": str(name),
         }

@@ -1,3 +1,5 @@
+from agent_utilities.core.transport_security import ResolvedTLSProfile
+
 from openbao_mcp.api.api_client_full import Client
 from openbao_mcp.api.api_client_secrets import Api as SecretsApi
 from openbao_mcp.api.api_client_sys import Api as SysApi
@@ -12,7 +14,7 @@ class Api(SecretsApi, SysApi, Client):
         token=None,
         username=None,
         password=None,
-        verify=True,
+        tls_profile: ResolvedTLSProfile | None = None,
         base_url=None,
     ):
         super().__init__(
@@ -20,6 +22,6 @@ class Api(SecretsApi, SysApi, Client):
             token=token,
             username=username,
             password=password,
-            verify=verify,
+            tls_profile=tls_profile,
             base_url=base_url,
         )

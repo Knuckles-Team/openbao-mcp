@@ -1,0 +1,6 @@
+{
+  "connector": "openbao-mcp",
+  "current_ontology_source": "openbao",
+  "migrations": [],
+  "schema_version": "1"
+}

@@ -14,8 +14,6 @@ def get_client() -> Api:
     token = setting("OPENBAO_TOKEN", "")
     username = setting("OPENBAO_MCP_USERNAME", "")
     password = setting("OPENBAO_MCP_PASSWORD", "")
-    verify = setting("OPENBAO_MCP_SSL_VERIFY", True)
-
     if not base_url:
         # Default fallback for testing
         base_url = "http://localhost"
@@ -25,5 +23,4 @@ def get_client() -> Api:
         token=token,
         username=username,
         password=password,
-        verify=verify,
     )

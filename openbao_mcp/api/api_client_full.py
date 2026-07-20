@@ -6,6 +6,7 @@ from typing import Any
 
 import requests
 import requests.structures
+from agent_utilities.core.transport_security import ResolvedTLSProfile
 
 from openbao_mcp.api.api_client_base import ApiClientBase
 
@@ -1162,7 +1163,7 @@ class Client(ApiClientBase):
         token: str | None = None,
         username: str | None = None,
         password: str | None = None,
-        verify: bool | str | None = True,
+        tls_profile: ResolvedTLSProfile | None = None,
         base_url: str | None = None,
     ):
         if base_url:
@@ -1174,8 +1175,7 @@ class Client(ApiClientBase):
         else:
             actual_base_url = "http://localhost:8200"
 
-        verify_val = True if verify is None else verify
-        super().__init__(actual_base_url, token, username, password, verify_val)
+        super().__init__(actual_base_url, token, username, password, tls_profile)
         self._address = actual_base_url
         self._token = token
         self._namespace = ""
@@ -1239,7 +1239,7 @@ class Client(ApiClientBase):
             self._token,
             self.username,
             self.password,
-            self._session.verify,
+            self.tls_profile,
         )
         cloned.SetNamespace(self._namespace)
         cloned.SetHeaders(dict(self._headers))

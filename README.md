@@ -63,27 +63,24 @@ When query strings or parameters are supplied, an LLM-free **Knowledge Graph res
 
 ## Installation
 
-> **Install the slim `[mcp]` extra.** For MCP-server hosting (including `uvx` /
-> container deploys), install `openbao-mcp[mcp]` — the MCP-server extra that pulls
-> only the FastMCP / FastAPI tooling (`agent-utilities[mcp]`). It deliberately
-> **excludes** the heavy agent runtime (the epistemic-graph engine, `pydantic-ai`,
-> `dspy`, `llama-index`, `tree-sitter`), so installs are dramatically smaller and
-> faster. Use the full `[agent]` extra only when you need the integrated Pydantic
-> AI agent.
+> **Install the connector-focused `[mcp]` extra.** Examples use `openbao-mcp[mcp]` to add
+> FastMCP / FastAPI through `agent-utilities[mcp]`; the required Agent Utilities core
+> still carries `epistemic-graph[full]`. The `[agent]` extra additionally
+> enables model orchestration.
 
 Pick the extra that matches what you want to run:
 
 | Extra | Installs | Use when |
 |-------|----------|----------|
-| `openbao-mcp[mcp]` | Slim MCP server only (`agent-utilities[mcp]` — FastMCP/FastAPI) | You only run the **MCP server** (smallest install / image) |
-| `openbao-mcp[agent]` | Full agent runtime (`agent-utilities[agent,logfire]` — Pydantic AI + the epistemic-graph engine) | You run the **integrated A2A agent** |
+| `openbao-mcp[mcp]` | Connector-focused MCP server (`agent-utilities[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | You only run the **MCP server** (smallest install / image) |
+| `openbao-mcp[agent]` | Agent runtime (`agent-utilities[agent-runtime,logfire]` — model orchestration + `epistemic-graph[full]`) | You run the **integrated A2A agent** |
 | `openbao-mcp[all]` | Everything (`mcp` + `agent` + `logfire`) | Development / both surfaces |
 
 ```bash
-# MCP server only (recommended for tool hosting — slim deps)
+# Connector-focused MCP server (includes the shared graph engine)
 uv pip install "openbao-mcp[mcp]"
 
-# Full agent runtime (Pydantic AI + epistemic-graph engine)
+# Agent runtime (adds model orchestration to the shared graph engine)
 uv pip install "openbao-mcp[agent]"
 
 # Everything (development)
@@ -96,26 +93,27 @@ One multi-stage `docker/Dockerfile` builds two right-sized images, selected by `
 
 | Image tag | Build target | Contents | Entrypoint |
 |-----------|--------------|----------|------------|
-| `knucklessg1/openbao-mcp:mcp` | `--target mcp` | `openbao-mcp[mcp]` — **slim**, no engine/`pydantic-ai`/`dspy`/`llama-index`/`tree-sitter` | `openbao-mcp` |
-| `knucklessg1/openbao-mcp:latest` | `--target agent` (default) | `openbao-mcp[agent]` — **full** agent runtime + epistemic-graph engine | `openbao-agent` |
+| `example/openbao-mcp:mcp` | `--target mcp` | `openbao-mcp[mcp]` — **connector-focused**, includes `epistemic-graph[full]`; no model-orchestration stack | `openbao-mcp` |
+| `example/openbao-mcp@sha256:<digest>` | `--target agent` (default) | `openbao-mcp[agent]` — **agent runtime**, model orchestration + `epistemic-graph[full]` | `openbao-agent` |
 
 ```bash
-docker build --target mcp   -t knucklessg1/openbao-mcp:mcp    docker/   # slim MCP server
-docker build --target agent -t knucklessg1/openbao-mcp:latest docker/   # full agent
+docker build --target mcp   -t example/openbao-mcp:mcp    docker/   # connector-focused MCP server
+docker build --target agent -t example/openbao-mcp:agent-local docker/   # agent runtime
 ```
 
-`docker/mcp.compose.yml` runs the slim `:mcp` server; `docker/compose.yml` runs the
-agent (`:latest`).
+`docker/mcp.compose.yml` runs the connector-focused `:mcp` server; `docker/compose.yml` runs the
+agent (`immutable agent digest`).
 
 ### Knowledge-graph database (`epistemic-graph`)
 
-The **full agent** (`[agent]` / `:latest`) embeds the **epistemic-graph** engine (pulled in
-transitively via `agent-utilities[agent]`). For production — or to share one knowledge graph
-across multiple agents — run **epistemic-graph as its own database container** and point the
-agent at it instead of embedding it. Deployment recipes (single-node + Raft HA), connection
-config, and the full database architecture (with diagrams) are documented in the
+Both `[mcp]` and `[agent]` carry the **epistemic-graph** engine through the required
+Agent Utilities core dependency (`epistemic-graph[full]`). The `[mcp]` extra keeps
+the server connector-focused; `[agent]` additionally enables model orchestration. Local
+deployments can use the bundled engine. For production or shared state, run
+**epistemic-graph as a dedicated database service** and configure the runtime to use it.
+Deployment recipes (single-node + Raft HA), connection configuration, and architecture
+diagrams are documented in the
 [epistemic-graph deployment guide](https://knuckles-team.github.io/epistemic-graph/deployment/).
-The slim `[mcp]` server does **not** require the database.
 
 ---
 
@@ -151,13 +149,13 @@ The package is fully configurable via the environment variables listed below:
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `OPENBAO_URL` | The primary URL of the OpenBao server. | `http://127.0.0.1:8200` | Yes |
-| `OPENBAO_TOKEN` | Root or service account access token. | `bao_root_token` | Yes |
+| `OPENBAO_TOKEN` | Runtime-injected service account access token. | None | Yes |
 | `BAO_ADDR` | Alias/fallback for the OpenBao server address. | None | No |
 | `VAULT_ADDR` | Alias/fallback for the OpenBao/Vault server address. | None | No |
 | `OPENBAO_MCP_BASE_URL` | Alternative fallback URL for user-level client endpoints. | `http://127.0.0.1:8200` | No |
 | `OPENBAO_MCP_USERNAME` | Username for username/password authentication methods. | None | No |
 | `OPENBAO_MCP_PASSWORD` | Password for username/password authentication methods. | None | No |
-| `OPENBAO_MCP_SSL_VERIFY` | Enable/disable SSL/TLS certificate verification (True/False). | `True` | No |
+| `TLS_PROFILE` / `TLS_PROFILE_REF` | AgentConfig private-CA/mTLS transport selector; verification is mandatory. | None | No |
 | `SECRETSTOOL` | Enable/disable Secrets Engine MCP tools namespace. | `True` | No |
 | `SYSTOOL` | Enable/disable System Administration MCP tools namespace. | `True` | No |
 | `AUTHTOOL` | Enable/disable Authentication Engine MCP tools namespace. | `True` | No |
@@ -305,19 +303,19 @@ graph TD
 A standard compose structure is provided inside the `docker/` folder. Build and deploy:
 
 ```bash
-docker compose -f docker/mcp.compose.yml up -d    # slim :mcp server
-docker compose -f docker/compose.yml up --build -d # full :latest agent
+docker compose -f docker/mcp.compose.yml up -d    # :mcp server
+docker compose -f docker/compose.yml up --build -d # local agent build
 ```
 
 Or pull a prebuilt image:
 
 ```bash
-docker pull knucklessg1/openbao-mcp:mcp      # slim MCP server
-docker pull knucklessg1/openbao-mcp:latest   # full agent (default)
+docker pull example/openbao-mcp:mcp      # connector-focused MCP server
+docker pull example/openbao-mcp@sha256:<digest>   # agent runtime (default)
 ```
 
-> The `:mcp` tag is the **slim MCP-server image** (`docker/Dockerfile --target mcp`,
-> installing `openbao-mcp[mcp]`); the default `:latest` tag is the **full agent image**
+> The `:mcp` tag is the **MCP-serving image** (`docker/Dockerfile --target mcp`,
+> installing `openbao-mcp[mcp]`); the default the immutable agent image is the **full agent image**
 > (`--target agent`, `openbao-mcp[agent]`) which also bundles the Pydantic AI agent and
 > the epistemic-graph engine. See [Container images](#container-images-mcp-vs-agent).
 
@@ -326,16 +324,16 @@ docker pull knucklessg1/openbao-mcp:latest   # full agent (default)
 <!-- BEGIN GENERATED: additional-deployment-options -->
 ### Additional Deployment Options
 
-`openbao-mcp` can also run as a **local container** (Docker / Podman / `uv`) or be
-consumed from a **remote deployment**. The
-[Deployment guide](https://knuckles-team.github.io/openbao-mcp/deployment/) has full, copy-paste
-`mcp_config.json` for all four transports — **stdio**, **streamable-http**,
-**local container / uv**, and **remote URL**:
+`openbao-mcp` can run as a local stdio process or container, or behind a remote
+network boundary. The
+[Deployment guide](https://knuckles-team.github.io/openbao-mcp/deployment/) carries
+the detailed transport contract.
 
-- **Local container / uv** — launch the server from `mcp_config.json` via `uvx`,
-  `docker run`, or `podman run`, or point at a local streamable-http container by `url`.
-- **Remote URL** — connect to a server deployed behind Caddy at
-  `http://openbao-mcp.arpa/mcp` using the `"url"` key.
+- **Local container** — launch a reviewed immutable image as a least-privilege
+  stdio child with no listener or published port.
+- **Remote URL** — connect through an operator-supplied authenticated HTTPS
+  ingress. Keep its URL, outbound identity references, trust profile, and exact
+  `MCP_ALLOWED_HOSTS` in `AgentConfig`.
 <!-- END GENERATED: additional-deployment-options -->
 
 ## Documentation
@@ -357,7 +355,7 @@ recommended reference for installation, deployment, and day-to-day operation.
 
 ## Contributing
 
-Please audit all code changes against ecosystem guidelines in [CONTRIBUTING.md](CONTRIBUTING.md) if available, and run:
+Please audit all code changes against the repository's contribution and review requirements, and run:
 
 ```bash
 pre-commit run --all-files
@@ -370,26 +368,27 @@ pre-commit run --all-files
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for complete details.
 
 
-<!-- BEGIN agent-os-genesis-deploy (generated; do not edit between markers) -->
+<!-- BEGIN agent-utilities-deployment (generated; do not edit between markers) -->
 
-## Deploy with `agent-os-genesis`
+## Deploy with `agent-utilities-deployment`
 
-This package can be provisioned for you — skill-guided — by the **`agent-os-genesis`**
-universal skill (its *single-package deploy mode*): it picks your install method, seeds
-secrets to OpenBao/Vault (or `.env`), trusts your enterprise CA, registers the MCP
-server, and verifies it — the same machinery that stands up the whole Agent OS, narrowed
-to just this package. Ask your agent to **"deploy `openbao-mcp` with agent-os-genesis"**.
+Provision this package with the consolidated **`agent-utilities-deployment`**
+workflow. It selects an installed-package, editable-source, or immutable-container
+path; records only runtime secret and TLS-profile references in `AgentConfig`; and
+runs doctor, registration, policy, observability, and rollback gates. Ask your agent
+to **"deploy `openbao-mcp` with agent-utilities-deployment"**.
 
 | Install mode | Command |
 |------|---------|
-| Bare-metal, prod (PyPI) | `uvx openbao-mcp` · or `uv tool install openbao-mcp` |
-| Bare-metal, dev (editable) | `uv pip install -e ".[all]"` · or `pip install -e ".[all]"` |
-| Container, prod | deploy `knucklessg1/openbao-mcp:latest` via docker-compose / swarm / podman / podman-compose / kubernetes |
-| Container, dev (editable) | deploy `docker/compose.dev.yml` (source-mounted at `/src`; edits live on restart) |
+| Installed package | `uv tool install "openbao-mcp[mcp]"`, then run `openbao-mcp` |
+| Editable source | `uv pip install -e ".[agent]"`, then run `openbao-mcp` |
+| Immutable container | deploy `registry.example.invalid/openbao-mcp@sha256:<digest>` through the operator-selected orchestrator |
 
-Secrets are read-existing + seeded via `vault_sync` — you are only prompted for what's missing.
+The repository embeds no deployment profile, credential value, certificate path, or
+environment-specific endpoint. Supply those at runtime through `AgentConfig` and the
+configured secret provider.
 
-<!-- END agent-os-genesis-deploy -->
+<!-- END agent-utilities-deployment -->
 
 ## Environment Variables
 
@@ -400,13 +399,15 @@ Secrets are read-existing + seeded via `vault_sync` — you are only prompted fo
 | Variable | Example | Description |
 |----------|---------|-------------|
 | `OPENBAO_URL` | `http://127.0.0.1:8200` | The primary URL of the OpenBao server. |
-| `OPENBAO_TOKEN` | `bao_root_token` | Root or service account access token. |
+| `OPENBAO_TOKEN` | secret-injected | Root or service account access token. |
 | `BAO_ADDR` | `http://127.0.0.1:8200` | Fallback address aliases for OpenBao / Vault endpoints. |
 | `VAULT_ADDR` | `http://127.0.0.1:8200` |  |
 | `OPENBAO_MCP_BASE_URL` | `http://127.0.0.1:8200` | Alternative base URL fallback for user-level client endpoints. |
 | `OPENBAO_MCP_USERNAME` | — | Client credentials for user authentication methods. |
-| `OPENBAO_MCP_PASSWORD` | — |  |
-| `OPENBAO_MCP_SSL_VERIFY` | `True` | Enable/disable SSL/TLS certificate verification (True or False). |
+| `OPENBAO_MCP_PASSWORD` | secret-injected |  |
+| `TLS_PROFILE` | `private-ca` | AgentConfig named transport profile |
+| `TLS_PROFILE_REF` | `secret://transport/provider` | Direct runtime profile reference |
+| `TLS_PROFILES_REF` | `secret://transport/catalog` | Named runtime profile catalog |
 | `SECRETSTOOL` | `True` | Set to True/False to enable or disable specific tool categories in the MCP server. |
 | `SYSTOOL` | `True` |  |
 | `AUTHTOOL` | `True` |  |
@@ -416,22 +417,24 @@ Secrets are read-existing + seeded via `vault_sync` — you are only prompted fo
 
 | Variable | Example | Description |
 |----------|---------|-------------|
-| `TRANSPORT` | `stdio` | MCP transport: `stdio` | `streamable-http` | `sse` |
-| `HOST` | `0.0.0.0` | Bind host (HTTP transports) |
+| `TRANSPORT` | `stdio` | MCP transport: `stdio` \| `streamable-http` \| `sse` |
+| `HOST` | `127.0.0.1` | Loopback bind host (set an authenticated ingress explicitly) |
 | `PORT` | `8000` | Bind port (HTTP transports) |
-| `MCP_TOOL_MODE` | `condensed` | Tool surface: `condensed` | `verbose` | `both` |
+| `MCP_TOOL_MODE` | `intent` | Tool surface: `intent` \| `condensed` \| `verbose` \| `both` |
 | `MCP_ENABLED_TOOLS` | — | Comma-separated tool allow-list |
 | `MCP_DISABLED_TOOLS` | — | Comma-separated tool deny-list |
 | `MCP_ENABLED_TAGS` | — | Comma-separated tag allow-list |
 | `MCP_DISABLED_TAGS` | — | Comma-separated tag deny-list |
-| `EUNOMIA_TYPE` | `none` | Authorization mode: `none` | `embedded` | `remote` |
+| `EUNOMIA_TYPE` | `none` | Authorization mode: `none` \| `embedded` \| `remote` |
 | `EUNOMIA_POLICY_FILE` | `mcp_policies.json` | Embedded Eunomia policy file |
 | `EUNOMIA_REMOTE_URL` | — | Remote Eunomia authorization server URL |
 | `ENABLE_OTEL` | `False` | Enable OpenTelemetry export |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | — | OTLP collector endpoint |
-| `MCP_CLIENT_AUTH` | — | Outbound MCP auth (`oidc-client-credentials` for fleet calls) |
+| `MCP_CLIENT_AUTH` | — | Outbound MCP child auth: `oidc-client-credentials` \| `basic` \| `none` |
 | `OIDC_CLIENT_ID` | — | OIDC client id (service-account auth) |
-| `OIDC_CLIENT_SECRET` | — | OIDC client secret (service-account auth) |
+| `OIDC_CLIENT_SECRET_REF` | `secret://identity/oidc-client-secret` | Runtime secret reference for the OIDC service account |
+| `MCP_BASIC_AUTH_USERNAME` | — | HTTP Basic username (`MCP_CLIENT_AUTH=basic`) |
+| `MCP_BASIC_AUTH_PASSWORD_REF` | `secret://identity/mcp-basic-password` | Runtime secret reference for HTTP Basic auth (`MCP_CLIENT_AUTH=basic`) |
 | `DEBUG` | `False` | Verbose logging |
 | `PYTHONUNBUFFERED` | `1` | Unbuffered stdout (recommended in containers) |
 | `MCP_URL` | `http://localhost:8000/mcp` | URL of the MCP server the agent connects to |
@@ -439,5 +442,21 @@ Secrets are read-existing + seeded via `vault_sync` — you are only prompted fo
 | `MODEL_ID` | `gpt-4o` | Model id for the agent |
 | `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
-_12 package + 22 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
+_14 package + 24 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
+
+<!-- GOVERNED-CAPABILITY:START -->
+## Governed capability contract
+
+This package ships a compact canonical skill surface with specialist procedures
+kept as referenced workflows. The current MCP tools, skill metadata,
+`connector_manifest.yml`, ontology, mappings, shapes, fixtures, migrations,
+tool-schema fingerprints, and certification metadata form one versioned
+capability contract. Validate them together; do not rely on stale tool names or
+historical per-task skill wrappers.
+
+Runtime endpoints, credentials, certificate trust, tenant identity, retention,
+and observability policy are deployment inputs and are never packaged values.
+See [Configuration, trust, and privacy](docs/configuration.md) before enabling a
+network transport, connector ingestion, GraphOS delegation, or trace export.
+<!-- GOVERNED-CAPABILITY:END -->

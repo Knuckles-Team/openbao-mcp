@@ -1,0 +1,20 @@
+{
+  "connector": "openbao-mcp",
+  "fixtures": [
+    {
+      "expected": {
+        "acl_state": "quarantine",
+        "id": "fixture-record",
+        "title": "Synthetic certification record"
+      },
+      "preset": "openbao-mounts",
+      "record": {
+        "accessor": "fixture-record",
+        "acl_public": false,
+        "description": "Synthetic content used only for contract validation.",
+        "type": "Synthetic certification record"
+      }
+    }
+  ],
+  "schema_version": "1"
+}
