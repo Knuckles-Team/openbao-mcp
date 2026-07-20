@@ -1,5 +1,6 @@
 ---
 name: openbao-mcp-operations
+skill_type: skill
 description: >-
   Operate openbao-mcp through its governed MCP and GraphOS capabilities, including secret vault manager. Use when a request requires this provider's read, change, automation, ingestion, troubleshooting, or evidence workflows.
 ---
