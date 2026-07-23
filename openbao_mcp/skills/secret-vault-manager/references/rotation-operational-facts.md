@@ -101,3 +101,42 @@ produces something that looks like a secret but authenticates nowhere:
 classifies a credential by name and refuses to auto-generate a value for
 anything provider-issued — it requires `--new-value-file` pointing at a
 value already minted through the provider's own flow.
+
+## 8. openbao-mcp's admin capability — how it mints its own OpenBao tokens
+
+`OPENBAO_TOKEN` is provider-issued (fact 7), but for exactly one provider —
+OpenBao itself — this tool CAN mint the new value in-house, because
+`openbao-mcp` was given a narrowly-scoped minting capability rather than a
+blanket admin/root token:
+
+- A dedicated ACL policy, `agent-apps-token-minter`, grants `create`/`update`
+  on `auth/token/create` **only**, with `allowed_parameters.policies`
+  restricted to `["agent-apps-rw"]` and `denied_parameters` blocking `id` /
+  `no_parent` / `no_default_policy`. It cannot mint a token with any other
+  policy (never `root`), cannot mint an orphan token, and cannot do anything
+  outside token creation — it is not a copy of the OpenBao root token.
+- A token carrying that policy (period `720h`, renewable) lives at OpenBao
+  `apps/openbao-mcp` as the `OPENBAO_ADMIN_TOKEN` key, alongside the existing
+  `OPENBAO_TOKEN` (agent-apps-rw, used for ordinary KV reads/writes) and
+  `OPENBAO_URL`. It reaches the pod the same way every other credential in
+  this cluster does: the whole-path `openbao-mcp-secrets` ExternalSecret
+  already `dataFrom.extract`s this path, so adding the key to OpenBao and
+  force-syncing was enough — no ExternalSecret spec change was needed. The
+  pod picks it up as an env var on its next restart (envFrom is read at
+  container start, not live-reloaded).
+- The **root** token that bootstrapped `agent-apps-token-minter` (from
+  `services/openbao/.env`, `BAO_ROOT_TOKEN`) is used exactly once, in-memory,
+  piped via stdin into an ephemeral `kubectl exec` — never written to disk,
+  never stored in any pod's env, never printed. It has no ongoing role.
+- `rotate_secret.py`'s `AUTO_MINTABLE` registry maps `OPENBAO_TOKEN ->
+  ("agent-apps-rw", "768h")`. `mint_provider_value()` consults it first;
+  anything NOT listed there (Mattermost tokens, Keycloak client secrets, …)
+  still falls through to the original hard refusal — auto-minting is opt-in
+  per credential type, never a blanket bypass of the provider-issued check.
+- The mint call itself (`mint_openbao_token`) execs into
+  `deploy/openbao-mcp` and POSTs `/v1/auth/token/create` using the pod's own
+  `OPENBAO_ADMIN_TOKEN` — never this script's local environment — mirroring
+  exactly how `_kv_call` already talks to OpenBao through that pod's
+  `OPENBAO_TOKEN`. The minted value is returned to the caller for immediate
+  use in `kv_merge_write` and is never `print()`'d/logged by this tool; only
+  its accessor (safe — cannot authenticate anything) appears in output.

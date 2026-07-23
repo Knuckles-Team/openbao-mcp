@@ -10,6 +10,11 @@ avoids ever putting a vault token into this script's own environment or command 
 SAFETY CONTRACT (see the skill's references/rotation-operational-facts.md):
   - `plan` NEVER writes anything. It is the default and requires no confirmation.
   - `execute` performs real changes and REQUIRES --confirm.
+  - Provider-issued credentials (`rotation_lib.CREDENTIAL_TYPES`) are never invented
+    locally. Most still require a human-minted `--new-value-file`; the ones in
+    `AUTO_MINTABLE` (currently just `OPENBAO_TOKEN`) are minted in-house through a
+    narrowly-scoped OpenBao capability (`mint_provider_value` / `mint_openbao_token`,
+    see operational fact 8) instead of refusing.
   - A secret VALUE is never passed as a CLI argument (it would leak into `ps`/shell
     history/kubectl audit logs) and never printed/logged — only lengths, hashes, and
     KV version numbers are.
@@ -203,6 +208,108 @@ def kv_rollback(path: str, to_version: int) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# In-house provider minting: some provider-issued credentials CAN be minted
+# by this tool itself rather than requiring a human to paste a value via
+# --new-value-file. Currently that is exactly one provider: OpenBao's own
+# token API, reachable from the openbao-mcp pod using its OPENBAO_ADMIN_TOKEN
+# env var -- a narrowly-scoped token-minter capability (policy
+# `agent-apps-token-minter`, restricted via `allowed_parameters` to only ever
+# mint tokens carrying the `agent-apps-rw` policy; see
+# references/rotation-operational-facts.md). Everything else (Mattermost
+# bot tokens, Keycloak client secrets, ...) has NO entry in AUTO_MINTABLE and
+# stays a hard refusal -- this tool must never guess how to mint a credential
+# it doesn't have a verified, scoped path to mint.
+# ---------------------------------------------------------------------------
+
+#: credential_key -> (policy to grant the minted OpenBao token, ttl)
+AUTO_MINTABLE: dict[str, tuple[str, str]] = {
+    "OPENBAO_TOKEN": ("agent-apps-rw", "768h"),
+}
+
+_MINT_HELPER = r"""
+import json, os, sys, urllib.request, urllib.error
+
+def _req(method, path, token, payload=None):
+    url = os.environ["OPENBAO_URL"] + path
+    data = json.dumps(payload).encode() if payload is not None else None
+    req = urllib.request.Request(url, data=data, method=method,
+                                  headers={"X-Vault-Token": token,
+                                           "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        body = resp.read()
+        return json.loads(body) if body else {}
+
+cmd = json.loads(sys.stdin.read())
+admin_token = os.environ.get("OPENBAO_ADMIN_TOKEN")
+if not admin_token:
+    print(json.dumps({"error": "OPENBAO_ADMIN_TOKEN not set on this pod -- "
+                                "see TASK 3 wiring in references/rotation-operational-facts.md"}))
+    sys.exit(1)
+
+try:
+    resp = _req("POST", "/v1/auth/token/create", admin_token, {
+        "policies": [cmd["policy"]],
+        "ttl": cmd["ttl"],
+        "display_name": cmd.get("display_name", "rotate_secret-minted"),
+    })
+except urllib.error.HTTPError as e:
+    print(json.dumps({"error": f"token/create failed: {e.code} {e.reason}"}))
+    sys.exit(1)
+
+auth = resp.get("auth") or {}
+token = auth.get("client_token")
+if not token:
+    print(json.dumps({"error": "mint returned no client_token"}))
+    sys.exit(1)
+# Emitted ONCE on stdout for the calling process to hold in memory and feed
+# straight into kv_merge_write -- callers must never print()/log() this.
+print(json.dumps({"client_token": token, "accessor": auth.get("accessor")}))
+"""
+
+
+def mint_openbao_token(policy: str, ttl: str) -> tuple[str, str]:
+    """Mint a new OpenBao token carrying ``policy`` via the openbao-mcp pod's
+    own ``OPENBAO_ADMIN_TOKEN`` (never this script's own environment).
+
+    Returns ``(client_token, accessor)``. Raises ``RuntimeError`` on failure.
+    The token value must be treated exactly like any other secret value by
+    the caller: fed directly into ``kv_merge_write``, never printed/logged.
+    """
+    ns, target = OPENBAO_EXEC_POD
+    result = subprocess.run(
+        ["kubectl", "exec", "-i", "-n", ns, target, "--", "python3", "-c", _MINT_HELPER],
+        input=json.dumps({"policy": policy, "ttl": ttl}),
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    out = json.loads(result.stdout.strip().splitlines()[-1])
+    if "error" in out:
+        raise RuntimeError(f"OpenBao token mint failed: {out['error']}")
+    return out["client_token"], out["accessor"]
+
+
+def mint_provider_value(credential_key: str) -> tuple[str, str] | None:
+    """Return ``(new_value, safe_description)`` if ``credential_key`` can be
+    auto-minted in-house, else ``None`` -- meaning the caller must fall back
+    to refusing (the credential has no verified in-house minting path and
+    needs a human to run the provider's own mint flow + ``--new-value-file``).
+
+    ``safe_description`` never contains the minted value -- only policy/ttl/
+    accessor, which are safe to print.
+    """
+    if credential_key not in AUTO_MINTABLE:
+        return None
+    policy, ttl = AUTO_MINTABLE[credential_key]
+    token, accessor = mint_openbao_token(policy, ttl)
+    return (
+        token,
+        f"minted via OpenBao POST /v1/auth/token/create (policy={policy}, "
+        f"ttl={ttl}, accessor={accessor})",
+    )
+
+
+# ---------------------------------------------------------------------------
 # kubectl side effects: force-sync + restart + verify
 # ---------------------------------------------------------------------------
 
@@ -304,17 +411,21 @@ def cmd_execute(args) -> int:
         print("Nothing to execute — no discovered path/consumers.", file=sys.stderr)
         return 1
 
-    if credential_type.kind == "provider-issued" and not args.new_value_file:
-        print(
-            f"'{args.credential_key}' is provider-issued ({credential_type.description}). "
-            "Mint it via the provider first, save the result to a file, and pass "
-            "--new-value-file <path>. Refusing to invent a value.",
-            file=sys.stderr,
-        )
-        return 3
-
     if args.new_value_file:
         new_value = Path(args.new_value_file).read_text().strip()
+    elif credential_type.kind == "provider-issued":
+        minted = mint_provider_value(args.credential_key)
+        if minted is None:
+            print(
+                f"'{args.credential_key}' is provider-issued ({credential_type.description}). "
+                "This tool has no verified in-house minting path for it (see AUTO_MINTABLE "
+                "in rotate_secret.py). Mint it via the provider first, save the result to a "
+                "file, and pass --new-value-file <path>. Refusing to invent a value.",
+                file=sys.stderr,
+            )
+            return 3
+        new_value, mint_desc = minted
+        print(f"[mint] Auto-minted new value in-house: {mint_desc}")
     else:
         new_value = credential_type.generator()
 
