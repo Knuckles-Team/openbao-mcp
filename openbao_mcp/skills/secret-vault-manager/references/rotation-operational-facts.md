@@ -69,13 +69,37 @@ numbers are safe to surface.
 ## 6. A shared secret can have MORE THAN ONE source-of-truth path
 
 Discovery in this skill is fully derived from live ExternalSecret specs —
-it does **not** assume a credential lives at exactly one OpenBao path. In
-this cluster, `GRAPH_SERVICE_AUTH_SECRET` is independently sourced from
-**two** paths (`apps/agent-utilities/deployment` used by the engine +
-mcp fleet, and `apps/graph-os` used by graph-os/graph-os-host) that happen to
-currently hold the same value. Rotating only one desyncs them immediately.
+it does **not** assume a credential lives at exactly one OpenBao path.
+`GRAPH_SERVICE_AUTH_SECRET` used to be independently sourced from **two**
+paths (`apps/agent-utilities/deployment` used by the engine + mcp fleet, and
+`apps/graph-os` used by graph-os/graph-os-host/alert-bridge) that happened to
+hold the same value. **Reconciled 2026-07-23**: `apps/agent-utilities/deployment`
+is now the sole canonical path (deployment-identity home; already read by
+the engine and 65/69 fleet consumers before reconciliation). The two
+ExternalSecrets that used to pull the whole `apps/graph-os` path for this key
+(`platform/graph-os-secrets`, `apps/alert-bridge-oidc`) now carry an
+**explicit** `spec.data[]` entry for just `GRAPH_SERVICE_AUTH_SECRET` pointing
+at the canonical path, alongside their existing `dataFrom.extract` of
+`graph-os` for their other (graph-os-specific) keys; the key itself was then
+deleted from `apps/graph-os` (read-merge-write, dropping only that one key —
+every other key at that path was left untouched). The VALUE was never
+rotated in this reconciliation — verified byte-identical (SHA-256) before
+and after.
+
+**Known discovery-tool caveat surfaced by this**: `discover_credential`'s
+`dataFrom.extract` matching only checks whether the credential key is
+present in the *target Secret's* actual key set — it cannot tell whether
+that key came from the `data[]` entry or the `dataFrom.extract`. So for an
+ExternalSecret with both (like `graph-os-secrets` now), `plan` still lists
+`apps/graph-os` as a nominal "source path" even though the real OpenBao data
+there no longer has the key. Ground truth is always the direct KV read
+(`kv2_get`/`read_keys`), not the plan's `distinct_source_paths` alone, when
+an ExternalSecret mixes `data[]` and `dataFrom` for overlapping keys.
+
 Always check `distinct_source_paths` in the plan output before executing —
-if it's more than one, every path must be written in the same operation.
+if it's more than one, every path that *actually* holds the key must be
+written in the same operation (verify with a direct KV read, per the caveat
+above, rather than trusting the ExternalSecret spec shape alone).
 
 ## 7. Provider-issued credentials must be minted BY the provider
 
