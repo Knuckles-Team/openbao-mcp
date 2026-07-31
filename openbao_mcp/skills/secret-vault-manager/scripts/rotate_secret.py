@@ -247,8 +247,15 @@ if not admin_token:
     sys.exit(1)
 
 try:
+    # NOTE: "policies" MUST be a plain string here, not a JSON list. OpenBao's
+    # ACL "allowed_parameters" match for this list-typed field only matches a
+    # comma-string request value against the policy's allowed-values list --
+    # a JSON array value (`["agent-apps-rw"]`) is denied ("permission denied")
+    # even though the calling token's policy legitimately permits it. Verified
+    # live: identical request/token, only this field's JSON type changed
+    # (array -> string) flips 403 -> 200. See D-OBP-1 / D-OBP-2.
     resp = _req("POST", "/v1/auth/token/create", admin_token, {
-        "policies": [cmd["policy"]],
+        "policies": cmd["policy"],
         "ttl": cmd["ttl"],
         "display_name": cmd.get("display_name", "rotate_secret-minted"),
     })

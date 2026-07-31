@@ -164,3 +164,26 @@ blanket admin/root token:
   `OPENBAO_TOKEN`. The minted value is returned to the caller for immediate
   use in `kv_merge_write` and is never `print()`'d/logged by this tool; only
   its accessor (safe — cannot authenticate anything) appears in output.
+
+### 8a. Two compounding gaps that made this 403 in practice until 2026-07-31 (D-OBP-1/2)
+
+Both are fixed now (policy in `services/openbao/k8s/bootstrap-policies.sh`; code in
+this file's `_MINT_HELPER`), but restated here because either one alone still looks
+like "the documented payload, still 403" if it regresses:
+
+1. **`sudo` was missing from the policy.** OpenBao requires the calling token to
+   have `sudo` on `auth/token/create` to mint a token whose `policies` are NOT a
+   subset of the calling token's own policies. `agent-apps-token-minter`'s own
+   policies are `[agent-apps-token-minter, default]` — asking for `agent-apps-rw`
+   is not a subset, so without `sudo` this is a 403 regardless of
+   `allowed_parameters` being satisfied. Verified live with a fresh token minted
+   from the corrected policy.
+2. **`"policies"` must be sent as a plain string, not a JSON list.** OpenBao's ACL
+   `allowed_parameters` match for this field only matches a comma-string request
+   value against the policy's allowed-value list; a JSON array value
+   (`{"policies": ["agent-apps-rw"]}`) is denied even with `sudo` present and even
+   from a token whose only relevant policy is `agent-apps-token-minter` — flip the
+   *identical* request to `{"policies": "agent-apps-rw"}` and it succeeds. Verified
+   live, same token, same TTL/display_name, only this one field's JSON type
+   changed. `_MINT_HELPER` sends the string form for exactly this reason — do not
+   "simplify" it back to a list.
