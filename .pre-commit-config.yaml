@@ -1,3 +1,6 @@
+# Phase 0 dev-velocity contract (graph-os-completion-program): a hook with no
+# explicit `stages:` below is commit-only, never both.
+default_stages: [pre-commit]
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: 1986670a8c4578a526ad3dddee3b35d9cfb9d7be # v0.3.4
