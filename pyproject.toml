@@ -8,7 +8,7 @@ version = "2.0.0"
 description = "OpenBao Secrets Engine MCP Server for Agentic AI!"
 readme = "README.md"
 classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
-requires-python = ">=3.11, <3.15"
+requires-python = ">=3.12, <3.15"
 dependencies = [ "agent-utilities>=2.0.0,<3.0.0",]
 [[project.authors]]
 name = "Project Maintainers"
@@ -63,3 +63,11 @@ ignore = [ "E402", "E501", "B008",]
 
 [tool.setuptools.packages.find]
 where = [ ".",]
+
+[tool.uv]
+override-dependencies = [
+    "fastmcp-slim[client,server]>=4.0.0b1",
+]
+
+[tool.uv.sources]
+agent-utilities = { path = ".uv-workspace-siblings/agent-utilities", editable = true }
