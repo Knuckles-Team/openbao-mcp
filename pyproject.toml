@@ -39,6 +39,9 @@ openbao-mcp = "openbao_mcp.connectors"
 [project.entry-points."agent_utilities.prompt_providers"]
 openbao-mcp = "openbao_mcp.prompts"
 
+[tool.uv.workspace]
+members = ["."]
+
 [tool.setuptools]
 include-package-data = true
 
