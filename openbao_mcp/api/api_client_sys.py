@@ -26,7 +26,9 @@ class Api(ApiClientBase):
         data = mounts.get("data") if isinstance(mounts.get("data"), dict) else mounts
         if not isinstance(data, dict):
             return mounts
-        mount_paths = [k for k, v in data.items() if isinstance(v, dict) and "type" in v]
+        mount_paths = [
+            k for k, v in data.items() if isinstance(v, dict) and "type" in v
+        ]
         denied = set(mount_paths) - set(_entitled("mount", mount_paths))
         if not denied:
             return mounts

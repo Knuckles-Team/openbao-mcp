@@ -67,9 +67,9 @@ def _kubectl_json(*args: str) -> dict:
     return json.loads(result.stdout)
 
 
-def collect_live_snapshot() -> tuple[
-    list[dict], dict[tuple[str, str], set[str]], list[dict]
-]:
+def collect_live_snapshot() -> (
+    tuple[list[dict], dict[tuple[str, str], set[str]], list[dict]]
+):
     """Fetch ExternalSecrets, Secret KEY NAMES (never values), and workloads cluster-wide.
 
     Returns the exact three inputs ``rotation_lib.discover_credential`` needs.
@@ -284,7 +284,18 @@ def mint_openbao_token(policy: str, ttl: str) -> tuple[str, str]:
     """
     ns, target = OPENBAO_EXEC_POD
     result = subprocess.run(
-        ["kubectl", "exec", "-i", "-n", ns, target, "--", "python3", "-c", _MINT_HELPER],
+        [
+            "kubectl",
+            "exec",
+            "-i",
+            "-n",
+            ns,
+            target,
+            "--",
+            "python3",
+            "-c",
+            _MINT_HELPER,
+        ],
         input=json.dumps({"policy": policy, "ttl": ttl}),
         capture_output=True,
         text=True,

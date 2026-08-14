@@ -39,7 +39,12 @@ def ingest_entities(
 ) -> dict[str, int]:
     """Write canonical typed nodes and relationships in one native transaction."""
     return _native_ingest_entities(
-        entities, relationships, source=source, domain=domain, client=client, graph=graph
+        entities,
+        relationships,
+        source=source,
+        domain=domain,
+        client=client,
+        graph=graph,
     )
 
 
