@@ -1,8 +1,7 @@
 {
   "api_version": "graphos.io/v1",
   "artifacts": {
-    "a2a.json": "272d7e5250e5b417b0302329a6178df738590b34fc741260beba40159cedf964",
-    "connector_manifest.yml": "93d9fea6ff9252e880ae27216583b37e0370d1d5656b664a23c6d39bd19b1fc0",
+    "connector_manifest.yml": "8a27d7eab8209c527b6b07a2888d118e79b1e1d70b5b82dfd47d5c1fbc999be6",
     "openbao_mcp/connectors/mcp_source_presets.json": "be6d6c81630098d87cdfd7738a3955245828035d86a615a0c7cc368139f2bde5",
     "openbao_mcp/connectors/tool_schema_fingerprints.json": "f63a5f3f9f5b480a7fcdfacbd8f3e32f9d59efbdd74a8c2250eea02031838b1b",
     "openbao_mcp/ontology/fixtures/records.json": "fddf20c61bce585f2ef2c740992e4a083fdde3a9a14c91e2335bc9134407e901",
@@ -19,19 +18,19 @@
     "synthetic_fixture_contract": "passed"
   },
   "compatibility": {
-    "agent_utilities": ">=2.1.0,<3",
+    "agent_utilities": ">=2.4.0,<3",
     "bundle_schema": "2",
-    "epistemic_graph": ">=2.23.0,<3"
+    "epistemic_graph": ">=2.26.0,<3"
   },
   "connector": "openbao-mcp",
   "kind": "ConnectorSourceAttestation",
   "live_certified": false,
   "mode": "offline-source",
   "schema_version": "2",
-  "signature": "GuEJQAbBi5LEUtRRKUc8fcql7sEvfRl64MjQhTZtOCH51guzxXCqxfV-7TzBRzKpMeHj6vtllzksG7NCkE9mCw",
-  "signature_algorithm": "ed25519",
-  "signer": "ontology-manifest-generator",
-  "signing_public_key": "QkigdPNpcUU7x7NcSkwCsUXIQpaFncMQbYSoiSgI2SY",
+  "signature": null,
+  "signature_algorithm": "none",
+  "signer": "UNSIGNED-PREVIEW",
+  "signing_public_key": "",
   "status": "source-validated",
-  "validated_at": "2026-07-31T04:00:00Z"
+  "validated_at": "2026-08-21T04:30:39Z"
 }
