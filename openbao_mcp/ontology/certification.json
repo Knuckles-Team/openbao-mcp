@@ -1,7 +1,7 @@
 {
   "api_version": "graphos.io/v1",
   "artifacts": {
-    "connector_manifest.yml": "8a27d7eab8209c527b6b07a2888d118e79b1e1d70b5b82dfd47d5c1fbc999be6",
+    "connector_manifest.yml": "b889beaf17369a20197fc7e90051ec5f3676196bdbe0d4e87df8a731dc361af1",
     "openbao_mcp/connectors/mcp_source_presets.json": "be6d6c81630098d87cdfd7738a3955245828035d86a615a0c7cc368139f2bde5",
     "openbao_mcp/connectors/tool_schema_fingerprints.json": "f63a5f3f9f5b480a7fcdfacbd8f3e32f9d59efbdd74a8c2250eea02031838b1b",
     "openbao_mcp/ontology/fixtures/records.json": "fddf20c61bce585f2ef2c740992e4a083fdde3a9a14c91e2335bc9134407e901",
@@ -18,9 +18,9 @@
     "synthetic_fixture_contract": "passed"
   },
   "compatibility": {
-    "agent_utilities": ">=2.4.0,<3",
+    "agent_utilities": ">=2.5.0,<3",
     "bundle_schema": "2",
-    "epistemic_graph": ">=2.26.0,<3"
+    "epistemic_graph": ">=2.27.0,<3"
   },
   "connector": "openbao-mcp",
   "kind": "ConnectorSourceAttestation",
@@ -32,5 +32,5 @@
   "signer": "UNSIGNED-PREVIEW",
   "signing_public_key": "",
   "status": "source-validated",
-  "validated_at": "2026-08-21T04:30:39Z"
+  "validated_at": "2026-08-26T13:42:55Z"
 }
