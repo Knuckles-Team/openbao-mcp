@@ -92,6 +92,46 @@ def _server_id(
     return node_id, node
 
 
+def _mount_node(raw_path: str, cfg: Any) -> tuple[str, dict[str, Any]] | None:
+    """Build the ``:SecretMount`` node for one ``sys/mounts`` entry.
+
+    Returns ``None`` for entries that are not mount configs at all (OpenBao mixes
+    non-mount metadata keys, like ``request_id``, into the same top-level mapping) or
+    whose path is empty after normalization. METADATA ONLY: reads path/type/accessor/
+    version off ``cfg``, never any nested secret payload.
+    """
+    if not isinstance(cfg, dict) or "type" not in cfg:
+        return None
+    path = _norm_path(raw_path)
+    if not path:
+        return None
+    node_id = f"openbao:mount:{path}"
+    options = cfg.get("options") or {}
+    node: dict[str, Any] = {
+        "id": node_id,
+        "node_type": "SecretMount",
+        "mountPath": raw_path,
+        "engineType": cfg.get("type"),
+        "externalToolId": path,
+    }
+    for k in _MOUNT_META_KEYS:
+        if cfg.get(k) is not None:
+            node[k] = cfg[k]
+    if isinstance(options, dict) and options.get("version") is not None:
+        node["mountVersion"] = str(options["version"])
+    return node_id, node
+
+
+def _validated_mount_data(mounts: dict[str, Any] | None) -> dict[str, Any]:
+    """The ``sys/mounts`` payload's mount-keyed mapping, or raise if it is malformed."""
+    if not mounts:
+        raise NativeIngestError("OpenBao mount ingestion requires mount metadata")
+    data = mounts.get("data") if isinstance(mounts.get("data"), dict) else mounts
+    if not isinstance(data, dict):
+        raise NativeIngestError("OpenBao mount metadata must be a mapping")
+    return data
+
+
 def ingest_mounts(
     mounts: dict[str, Any] | None,
     *,
@@ -105,11 +145,7 @@ def ingest_mounts(
     mount config (``type``, ``accessor``, ``description``, ``options``…). METADATA ONLY: the
     mapper reads path/type/accessor/version, never any secret payload.
     """
-    if not mounts:
-        raise NativeIngestError("OpenBao mount ingestion requires mount metadata")
-    data = mounts.get("data") if isinstance(mounts.get("data"), dict) else mounts
-    if not isinstance(data, dict):
-        raise NativeIngestError("OpenBao mount metadata must be a mapping")
+    data = _validated_mount_data(mounts)
 
     entities: list[dict[str, Any]] = []
     relationships: list[dict[str, Any]] = []
@@ -119,26 +155,10 @@ def ingest_mounts(
         entities.append(server_node)
 
     for raw_path, cfg in data.items():
-        # Skip non-mount metadata keys OpenBao mixes into the top level.
-        if not isinstance(cfg, dict) or "type" not in cfg:
+        built = _mount_node(raw_path, cfg)
+        if built is None:
             continue
-        path = _norm_path(raw_path)
-        if not path:
-            continue
-        node_id = f"openbao:mount:{path}"
-        options = cfg.get("options") or {}
-        node: dict[str, Any] = {
-            "id": node_id,
-            "node_type": "SecretMount",
-            "mountPath": raw_path,
-            "engineType": cfg.get("type"),
-            "externalToolId": path,
-        }
-        for k in _MOUNT_META_KEYS:
-            if cfg.get(k) is not None:
-                node[k] = cfg[k]
-        if isinstance(options, dict) and options.get("version") is not None:
-            node["mountVersion"] = str(options["version"])
+        node_id, node = built
         entities.append(node)
         if server_id is not None:
             relationships.append(
