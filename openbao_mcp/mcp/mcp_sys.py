@@ -1,10 +1,48 @@
 """MCP tools for sys operations."""
 
+from typing import Any, Callable
+
 from fastmcp import Context, FastMCP
 from fastmcp.dependencies import Depends
 from pydantic import Field
 
 from openbao_mcp.auth import get_client
+
+# Backwards-compatible methods mapped straight onto the legacy client:
+_SYS_LEGACY_ACTIONS: dict[str, Callable[[Any, dict], Any]] = {
+    "get_health": lambda client, kwargs: client.get_health(**kwargs),
+    "get_mounts": lambda client, kwargs: client.get_mounts(**kwargs),
+    "enable_mount": lambda client, kwargs: client.enable_mount(**kwargs),
+    "get_internal_openapi_spec": lambda client, kwargs: client.get_internal_openapi_spec(
+        **kwargs
+    ),
+}
+
+# Advanced Sys interface matching the Go API:
+_SYS_ADVANCED_ACTIONS: dict[str, Callable[[Any, dict], Any]] = {
+    "init": lambda client, kwargs: client.Sys().Init(kwargs.get("opts", {})),
+    "init_status": lambda client, kwargs: {"initialized": client.Sys().InitStatus()},
+    "seal": lambda client, kwargs: client.Sys().Seal(),
+    "unseal": lambda client, kwargs: client.Sys().Unseal(kwargs.get("shard", "")),
+    "seal_status": lambda client, kwargs: client.Sys().SealStatus(),
+    "health": lambda client, kwargs: client.Sys().Health(),
+    "leader": lambda client, kwargs: client.Sys().Leader(),
+    "ha_status": lambda client, kwargs: client.Sys().HAStatus(),
+    "raft_join": lambda client, kwargs: client.Sys().RaftJoin(kwargs.get("opts", {})),
+    "raft_autopilot_state": lambda client, kwargs: client.Sys().RaftAutopilotState(),
+}
+
+_SYS_ACTIONS: dict[str, Callable[[Any, dict], Any]] = {
+    **_SYS_LEGACY_ACTIONS,
+    **_SYS_ADVANCED_ACTIONS,
+}
+
+
+def _dispatch_sys_action(action: str, client, kwargs: dict) -> Any:
+    handler = _SYS_ACTIONS.get(action)
+    if handler is None:
+        raise ValueError(f"Unknown sys action: {action}")
+    return handler(client, kwargs)
 
 
 def register_sys_tools(mcp: FastMCP):
@@ -36,43 +74,7 @@ def register_sys_tools(mcp: FastMCP):
             return {"error": "Operation failed"}
 
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
-
-        # Backwards compatible methods mapped on the legacy client:
-        if action == "get_health":
-            return client.get_health(**kwargs)
-        if action == "get_mounts":
-            return client.get_mounts(**kwargs)
-        if action == "enable_mount":
-            return client.enable_mount(**kwargs)
-        if action == "get_internal_openapi_spec":
-            return client.get_internal_openapi_spec(**kwargs)
-
-        # Advanced Sys interface matching Go API:
-        if action == "init":
-            opts = kwargs.get("opts", {})
-            return client.Sys().Init(opts)
-        if action == "init_status":
-            return {"initialized": client.Sys().InitStatus()}
-        if action == "seal":
-            return client.Sys().Seal()
-        if action == "unseal":
-            shard = kwargs.get("shard", "")
-            return client.Sys().Unseal(shard)
-        if action == "seal_status":
-            return client.Sys().SealStatus()
-        if action == "health":
-            return client.Sys().Health()
-        if action == "leader":
-            return client.Sys().Leader()
-        if action == "ha_status":
-            return client.Sys().HAStatus()
-        if action == "raft_join":
-            opts = kwargs.get("opts", {})
-            return client.Sys().RaftJoin(opts)
-        if action == "raft_autopilot_state":
-            return client.Sys().RaftAutopilotState()
-
-        raise ValueError(f"Unknown sys action: {action}")
+        return _dispatch_sys_action(action, client, kwargs)
 
     @mcp.tool(tags={"sys", "kg"})
     async def openbao_ingest_mounts(
