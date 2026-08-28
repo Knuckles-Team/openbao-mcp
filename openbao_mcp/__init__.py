@@ -38,26 +38,35 @@ def _import_module_safely(module_name: str):
         return None
 
 
-def __getattr__(name: str) -> Any:
-    if name == "_MCP_AVAILABLE":
-        mcp_key = next((k for k in OPTIONAL_MODULES if "mcp_server" in k), None)
-        return _import_module_safely(mcp_key) is not None if mcp_key else False
-    if name == "_AGENT_AVAILABLE":
-        agent_key = next((k for k in OPTIONAL_MODULES if "agent_server" in k), None)
-        return _import_module_safely(agent_key) is not None if agent_key else False
+def _optional_module_importable(name_fragment: str) -> bool:
+    """Whether the optional module whose name contains `name_fragment` imports cleanly."""
+    module_name = next((k for k in OPTIONAL_MODULES if name_fragment in k), None)
+    return module_name is not None and _import_module_safely(module_name) is not None
 
+
+def _load_optional_module(module_name: str):
+    if module_name not in _loaded_optional_modules:
+        module = _import_module_safely(module_name)
+        if module is not None:
+            _loaded_optional_modules[module_name] = module
+            _expose_members(module)
+    return _loaded_optional_modules.get(module_name)
+
+
+def _resolve_from_optional_modules(name: str) -> Any:
     for module_name in OPTIONAL_MODULES:
-        if module_name not in _loaded_optional_modules:
-            module = _import_module_safely(module_name)
-            if module is not None:
-                _loaded_optional_modules[module_name] = module
-                _expose_members(module)
-
-        module = _loaded_optional_modules.get(module_name)
+        module = _load_optional_module(module_name)
         if module is not None and hasattr(module, name):
             return getattr(module, name)
-
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __getattr__(name: str) -> Any:
+    if name == "_MCP_AVAILABLE":
+        return _optional_module_importable("mcp_server")
+    if name == "_AGENT_AVAILABLE":
+        return _optional_module_importable("agent_server")
+    return _resolve_from_optional_modules(name)
 
 
 def __dir__() -> list[str]:
