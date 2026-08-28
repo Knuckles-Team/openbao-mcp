@@ -1,10 +1,75 @@
 """MCP tools for auth operations."""
 
+from typing import Any, Callable
+
 from fastmcp import Context, FastMCP
 from fastmcp.dependencies import Depends
 from pydantic import Field
 
 from openbao_mcp.auth import get_client
+
+
+class _AuthMethod:
+    """auth_method shape the underlying client expects: a mount + credential data."""
+
+    def __init__(self, mount_val, data_val):
+        self.mount = mount_val
+        self.data = data_val
+
+
+def _auth_login(client, kwargs: dict) -> Any:
+    mount = kwargs.get("mount", "auth/userpass")
+    data = kwargs.get("data", {})
+    return client.Auth().Login(None, _AuthMethod(mount, data))
+
+
+def _auth_mfa_login(client, kwargs: dict) -> Any:
+    mount = kwargs.get("mount", "auth/userpass")
+    data = kwargs.get("data", {})
+    creds = kwargs.get("creds", [])
+    return client.Auth().MFALogin(None, _AuthMethod(mount, data), *creds)
+
+
+def _auth_mfa_validate(client, kwargs: dict) -> Any:
+    mfa_secret = kwargs.get("mfa_secret", "")
+    payload = kwargs.get("payload", {})
+    return client.Auth().MFAValidate(None, mfa_secret, payload)
+
+
+def _auth_token_create(client, kwargs: dict) -> Any:
+    return client.Auth().Token().Create(kwargs.get("opts", {}))
+
+
+def _auth_token_lookup(client, kwargs: dict) -> Any:
+    return client.Auth().Token().Lookup(kwargs.get("token", ""))
+
+
+def _auth_token_renew(client, kwargs: dict) -> Any:
+    token = kwargs.get("token", "")
+    increment = kwargs.get("increment", 0)
+    return client.Auth().Token().Renew(token, increment)
+
+
+def _auth_token_revoke(client, kwargs: dict) -> Any:
+    return client.Auth().Token().RevokeTree(kwargs.get("token", ""))
+
+
+_AUTH_ACTIONS: dict[str, Callable[[Any, dict], Any]] = {
+    "login": _auth_login,
+    "mfa_login": _auth_mfa_login,
+    "mfa_validate": _auth_mfa_validate,
+    "token_create": _auth_token_create,
+    "token_lookup": _auth_token_lookup,
+    "token_renew": _auth_token_renew,
+    "token_revoke": _auth_token_revoke,
+}
+
+
+def _dispatch_auth_action(action: str, client, kwargs: dict) -> Any:
+    handler = _AUTH_ACTIONS.get(action)
+    if handler is None:
+        raise ValueError(f"Unknown auth action: {action}")
+    return handler(client, kwargs)
 
 
 def register_auth_tools(mcp: FastMCP):
@@ -35,50 +100,4 @@ def register_auth_tools(mcp: FastMCP):
             return {"error": "Operation failed"}
 
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
-
-        if action == "login":
-            # auth_method is represented by standard dictionary containing mount/credentials
-            class MockAuthMethod:
-                def __init__(self, mount_val, data_val):
-                    self.mount = mount_val
-                    self.data = data_val
-
-            mount = kwargs.get("mount", "auth/userpass")
-            data = kwargs.get("data", {})
-            return client.Auth().Login(None, MockAuthMethod(mount, data))
-
-        if action == "mfa_login":
-
-            class MockMFAMethod:
-                def __init__(self, mount_val, data_val):
-                    self.mount = mount_val
-                    self.data = data_val
-
-            mount = kwargs.get("mount", "auth/userpass")
-            data = kwargs.get("data", {})
-            creds = kwargs.get("creds", [])
-            return client.Auth().MFALogin(None, MockMFAMethod(mount, data), *creds)
-
-        if action == "mfa_validate":
-            mfa_secret = kwargs.get("mfa_secret", "")
-            payload = kwargs.get("payload", {})
-            return client.Auth().MFAValidate(None, mfa_secret, payload)
-
-        if action == "token_create":
-            opts = kwargs.get("opts", {})
-            return client.Auth().Token().Create(opts)
-
-        if action == "token_lookup":
-            token = kwargs.get("token", "")
-            return client.Auth().Token().Lookup(token)
-
-        if action == "token_renew":
-            token = kwargs.get("token", "")
-            increment = kwargs.get("increment", 0)
-            return client.Auth().Token().Renew(token, increment)
-
-        if action == "token_revoke":
-            token = kwargs.get("token", "")
-            return client.Auth().Token().RevokeTree(token)
-
-        raise ValueError(f"Unknown auth action: {action}")
+        return _dispatch_auth_action(action, client, kwargs)
