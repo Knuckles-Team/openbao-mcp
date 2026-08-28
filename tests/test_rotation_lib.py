@@ -366,3 +366,61 @@ def test_plan_includes_rollback_step_per_source_path():
 
     assert any("prior" in s and "KV v2 version" in s for s in plan.steps)
     assert any("revoke the OLD" in s for s in plan.steps)
+
+
+# ---------------------------------------------------------------------------
+# Previously-uncovered branches (found while characterizing before refactor)
+# ---------------------------------------------------------------------------
+
+
+def test_dataFrom_find_pull_is_also_detected():
+    """spec.dataFrom[].find (as opposed to .extract) is a second whole-path pull shape."""
+    es = [
+        {
+            "metadata": {"name": "found-secrets", "namespace": "apps"},
+            "spec": {
+                "dataFrom": [{"find": {"path": "apps/found-path"}}],
+                "target": {"name": "found-secrets"},
+            },
+        }
+    ]
+    secret_keys = {("apps", "found-secrets"): {"SOME_KEY"}}
+    workloads = [_deployment("found-consumer", "apps", secret_ref="found-secrets")]
+
+    result = rl.discover_credential("SOME_KEY", es, secret_keys, workloads)
+
+    assert result.found()
+    assert result.distinct_source_paths == ["apps/found-path"]
+    assert len(result.all_consumers) == 1
+
+
+def test_plan_verify_step_falls_back_to_manual_for_unlisted_verify_strategy():
+    """A credential type whose verify strategy isn't rollout/openbao-self-lookup/
+    http-200-check gets the generic manual-verification step (the Keycloak client
+    secret shape, verify="manual", is the only registry entry that hits this today).
+    """
+    es = [
+        _external_secret(
+            "app-client-secrets",
+            "apps",
+            data=[
+                {
+                    "secretKey": "APP_CLIENT_SECRET",
+                    "remoteRef": {"key": "app-client"},
+                }
+            ],
+        )
+    ]
+    secret_keys = {("apps", "app-client-secrets"): {"APP_CLIENT_SECRET"}}
+    workloads = [_deployment("app", "apps", secret_ref="app-client-secrets")]
+    discovery = rl.discover_credential(
+        "APP_CLIENT_SECRET", es, secret_keys, workloads
+    )
+    ct = rl.classify_credential("APP_CLIENT_SECRET")
+    assert ct.verify == "manual"
+
+    plan = rl.build_plan(discovery, ct)
+
+    assert any(
+        "run the credential's functional check manually" in s for s in plan.steps
+    )
