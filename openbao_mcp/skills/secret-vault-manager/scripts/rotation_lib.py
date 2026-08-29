@@ -95,42 +95,73 @@ def _target_secret_name(external_secret: dict) -> str:
     return target.get("name") or external_secret["metadata"]["name"]
 
 
-def _es_source_refs(
-    external_secret: dict, credential_key: str, target_keys: set[str]
-) -> list[tuple[str, str]]:
-    """Return [(openbao_path, property_name), ...] this ExternalSecret uses for credential_key.
-
-    Handles both explicit ``spec.data[]`` entries (secretKey == credential_key)
-    and whole-path ``spec.dataFrom[].extract`` pulls (only a match when the
-    *actual* target Secret's key list — fetched live, never guessed —
-    contains ``credential_key``, since an ``extract`` pull's field set isn't
-    declared in the ExternalSecret spec itself).
-    """
-    spec = external_secret.get("spec", {})
+def _explicit_data_refs(spec: dict, credential_key: str) -> list[tuple[str, str]]:
+    """Refs from explicit ``spec.data[]`` entries whose ``secretKey`` matches."""
     refs: list[tuple[str, str]] = []
-
     for entry in spec.get("data", []) or []:
         if entry.get("secretKey") == credential_key:
             remote = entry.get("remoteRef", {})
             path = remote.get("key", "")
             prop = remote.get("property") or credential_key
             refs.append((path, prop))
+    return refs
 
-    if credential_key in target_keys:
-        for entry in spec.get("dataFrom", []) or []:
-            extract = entry.get("extract")
-            if extract and extract.get("key"):
-                refs.append((extract["key"], credential_key))
-            find = entry.get("find")
-            if find and find.get("path"):
-                refs.append((find["path"], credential_key))
 
-    # de-dupe, keep order
+def _datafrom_refs(spec: dict, credential_key: str) -> list[tuple[str, str]]:
+    """Refs from whole-path ``spec.dataFrom[]`` pulls (both ``extract`` and ``find`` forms)."""
+    refs: list[tuple[str, str]] = []
+    for entry in spec.get("dataFrom", []) or []:
+        extract = entry.get("extract")
+        if extract and extract.get("key"):
+            refs.append((extract["key"], credential_key))
+        find = entry.get("find")
+        if find and find.get("path"):
+            refs.append((find["path"], credential_key))
+    return refs
+
+
+def _dedupe_refs(refs: list[tuple[str, str]]) -> list[tuple[str, str]]:
     out: list[tuple[str, str]] = []
     for r in refs:
         if r not in out:
             out.append(r)
     return out
+
+
+def _es_source_refs(
+    external_secret: dict, credential_key: str, target_keys: set[str]
+) -> list[tuple[str, str]]:
+    """Return [(openbao_path, property_name), ...] this ExternalSecret uses for credential_key.
+
+    Handles both explicit ``spec.data[]`` entries (secretKey == credential_key)
+    and whole-path ``spec.dataFrom[].extract``/``.find`` pulls (only a match when
+    the *actual* target Secret's key list — fetched live, never guessed —
+    contains ``credential_key``, since a whole-path pull's field set isn't
+    declared in the ExternalSecret spec itself).
+    """
+    spec = external_secret.get("spec", {})
+    refs = _explicit_data_refs(spec, credential_key)
+    if credential_key in target_keys:
+        refs += _datafrom_refs(spec, credential_key)
+    return _dedupe_refs(refs)
+
+
+def _container_secret_consumers(
+    kind: str, ns: str, name: str, container: dict, secret_name: str
+) -> list[Consumer]:
+    """Every way one pod-spec container mounts ``secret_name`` (envFrom or a single env key)."""
+    cname = container.get("name", "")
+    consumers: list[Consumer] = []
+    for ef in container.get("envFrom", []) or []:
+        if ef.get("secretRef", {}).get("name") == secret_name:
+            consumers.append(Consumer(kind, ns, name, cname, "envFrom"))
+    for env in container.get("env", []) or []:
+        skr = env.get("valueFrom", {}).get("secretKeyRef", {})
+        if skr.get("name") == secret_name:
+            consumers.append(
+                Consumer(kind, ns, name, cname, f"env:{env.get('name')}")
+            )
+    return consumers
 
 
 def _workload_consumers(
@@ -146,16 +177,9 @@ def _workload_consumers(
         name = meta.get("name", "")
         pod_spec = wl.get("spec", {}).get("template", {}).get("spec", {})
         for container in pod_spec.get("containers", []) or []:
-            cname = container.get("name", "")
-            for ef in container.get("envFrom", []) or []:
-                if ef.get("secretRef", {}).get("name") == secret_name:
-                    consumers.append(Consumer(kind, ns, name, cname, "envFrom"))
-            for env in container.get("env", []) or []:
-                skr = env.get("valueFrom", {}).get("secretKeyRef", {})
-                if skr.get("name") == secret_name:
-                    consumers.append(
-                        Consumer(kind, ns, name, cname, f"env:{env.get('name')}")
-                    )
+            consumers.extend(
+                _container_secret_consumers(kind, ns, name, container, secret_name)
+            )
     return consumers
 
 
@@ -374,6 +398,136 @@ class RotationPlan:
         return "\n".join(lines)
 
 
+def _generate_or_mint_step(credential_type: CredentialType) -> str:
+    if credential_type.kind == "generated":
+        return "Generate a new value locally (cryptographically random, never logged)."
+    return (
+        "Mint the new value via the OWNING PROVIDER's API — "
+        f"{credential_type.mint_procedure or 'a human-run provider-specific procedure'}. "
+        "Do NOT invent this value locally."
+    )
+
+
+def _multi_path_warning(discovery: DiscoveryResult) -> str | None:
+    n_paths = len(discovery.distinct_source_paths)
+    if n_paths <= 1:
+        return None
+    return (
+        f"This credential is duplicated across {n_paths} independent OpenBao KV paths "
+        f"({', '.join(discovery.distinct_source_paths)}). All paths currently holding it "
+        "must be verified to hold the SAME value before rotating, and all must be "
+        "written in the same operation — writing only one path immediately desyncs it "
+        "from the others."
+    )
+
+
+def _read_merge_write_steps(discovery: DiscoveryResult) -> list[str]:
+    return [
+        f"Read the FULL existing secret at apps/{path} (all keys), merge in the new "
+        f"{discovery.credential_key} value, and write it back as ONE call (KV v2 "
+        "replaces the entire version on write — a per-key write would delete every "
+        "other key at that path)."
+        for path in discovery.distinct_source_paths
+    ]
+
+
+def _unique_channels(discovery: DiscoveryResult) -> list[Channel]:
+    unique_channels: list[Channel] = []
+    seen_es: set[tuple[str, str]] = set()
+    for ch in discovery.channels:
+        key = (ch.namespace, ch.external_secret)
+        if key not in seen_es:
+            seen_es.add(key)
+            unique_channels.append(ch)
+    return unique_channels
+
+
+def _sync_steps(discovery: DiscoveryResult, unique_channels: list[Channel]) -> list[str]:
+    if discovery.is_shared:
+        sync_cmds = ", ".join(
+            f"`kubectl annotate externalsecret -n {ch.namespace} {ch.external_secret} "
+            f'force-sync="$(date +%s)" --overwrite`'
+            for ch in unique_channels
+        )
+        return [
+            f"Force-sync ALL of these ExternalSecrets together (not one-at-a-time): {sync_cmds}"
+        ]
+    return [
+        f"Force-sync `{ch.external_secret}` (ns={ch.namespace}): "
+        f"`kubectl annotate externalsecret -n {ch.namespace} {ch.external_secret} "
+        f'force-sync="$(date +%s)" --overwrite` — kubectl patch on the Secret '
+        "itself would silently revert on the next 1h refresh; always go through OpenBao."
+        for ch in unique_channels
+    ]
+
+
+def _restart_steps_and_warning(
+    discovery: DiscoveryResult,
+) -> tuple[list[str], str | None]:
+    consumers = discovery.all_consumers
+    if discovery.is_shared and len(consumers) > 1:
+        step = (
+            f"Restart all {len(consumers)} consumer workloads in the SAME batch (not "
+            "sequentially): `kubectl rollout restart <kind>/<name> -n <namespace>` for "
+            "every consumer listed above, issued back-to-back, then wait on all "
+            "`kubectl rollout status` together. A holder/consumer restarted alone while "
+            "others still hold the old value means the two sides authenticate with "
+            "mismatched secrets and requests between them fail until every pod is on the "
+            "new value."
+        )
+        warning = (
+            "This shared credential has no built-in dual-secret grace window here — the "
+            "restart batch causes a short auth blip for any in-flight request between the "
+            "holder and its consumers during the cutover. Confirm a brief blip is "
+            "acceptable (or add dual-secret support before rotating) before executing."
+        )
+        return [step], warning
+    return [
+        f"Restart `{con.kind}/{con.name}` (ns={con.namespace}): `kubectl rollout restart {con.kind.lower()}/{con.name} -n {con.namespace}`."
+        for con in consumers
+    ], None
+
+
+def _verify_step(credential_type: CredentialType) -> str:
+    if credential_type.verify == "rollout":
+        return (
+            "Verify: `kubectl rollout status` succeeds (Ready) for every consumer AND at "
+            "least one sampled fleet pod's health/readiness endpoint returns healthy — a "
+            "CrashLoop or failing readiness probe after restart means the new secret was "
+            "rejected."
+        )
+    if credential_type.verify == "openbao-self-lookup":
+        return (
+            "Verify: from the rotated pod, call OpenBao's `/v1/auth/token/lookup-self` "
+            "with the new token and confirm it returns 200 with the expected policies."
+        )
+    if credential_type.verify == "http-200-check":
+        return (
+            "Verify: call the provider's own authenticated endpoint with the new value "
+            "(e.g. Mattermost `GET /api/v4/users/me`) and confirm HTTP 200."
+        )
+    return "Verify: run the credential's functional check manually before proceeding."
+
+
+def _rollback_steps(discovery: DiscoveryResult) -> list[str]:
+    return [
+        f"On verification FAILURE: automatically roll back apps/{path} to its prior "
+        "KV v2 version (`Rollback`/`kv2_get` old version -> `kv2_put`), force-sync the "
+        "affected ExternalSecret(s) again, and restart the same consumer batch again."
+        for path in discovery.distinct_source_paths
+    ]
+
+
+def _revoke_step(credential_type: CredentialType) -> str | None:
+    if credential_type.kind != "provider-issued":
+        return None
+    return (
+        "After the new value verifies end-to-end, revoke the OLD credential at its "
+        "provider (do this LAST, only after verification passes, so a failed rotation "
+        "can still roll back to a live old credential)."
+    )
+
+
 def build_plan(
     discovery: DiscoveryResult, credential_type: CredentialType
 ) -> RotationPlan:
@@ -381,7 +535,6 @@ def build_plan(
 
     Pure function — no side effects, always safe to call (this IS the dry-run).
     """
-    warnings: list[str] = []
     if not discovery.found():
         return RotationPlan(
             discovery.credential_key,
@@ -393,121 +546,29 @@ def build_plan(
             ],
         )
 
-    steps: list[str] = []
+    warnings: list[str] = []
+    steps: list[str] = [_generate_or_mint_step(credential_type)]
 
-    if credential_type.kind == "generated":
-        steps.append(
-            "Generate a new value locally (cryptographically random, never logged)."
-        )
-    else:
-        steps.append(
-            "Mint the new value via the OWNING PROVIDER's API — "
-            f"{credential_type.mint_procedure or 'a human-run provider-specific procedure'}. "
-            "Do NOT invent this value locally."
-        )
+    multi_path_warning = _multi_path_warning(discovery)
+    if multi_path_warning:
+        warnings.append(multi_path_warning)
 
-    n_paths = len(discovery.distinct_source_paths)
-    if n_paths > 1:
-        warnings.append(
-            f"This credential is duplicated across {n_paths} independent OpenBao KV paths "
-            f"({', '.join(discovery.distinct_source_paths)}). All paths currently holding it "
-            "must be verified to hold the SAME value before rotating, and all must be "
-            "written in the same operation — writing only one path immediately desyncs it "
-            "from the others."
-        )
+    steps.extend(_read_merge_write_steps(discovery))
 
-    for path in discovery.distinct_source_paths:
-        steps.append(
-            f"Read the FULL existing secret at apps/{path} (all keys), merge in the new "
-            f"{discovery.credential_key} value, and write it back as ONE call (KV v2 "
-            "replaces the entire version on write — a per-key write would delete every "
-            "other key at that path)."
-        )
+    unique_channels = _unique_channels(discovery)
+    steps.extend(_sync_steps(discovery, unique_channels))
 
-    unique_channels: list[Channel] = []
-    seen_es: set[tuple[str, str]] = set()
-    for ch in discovery.channels:
-        key = (ch.namespace, ch.external_secret)
-        if key not in seen_es:
-            seen_es.add(key)
-            unique_channels.append(ch)
+    restart_steps, restart_warning = _restart_steps_and_warning(discovery)
+    steps.extend(restart_steps)
+    if restart_warning:
+        warnings.append(restart_warning)
 
-    if discovery.is_shared:
-        sync_cmds = ", ".join(
-            f"`kubectl annotate externalsecret -n {ch.namespace} {ch.external_secret} "
-            f'force-sync="$(date +%s)" --overwrite`'
-            for ch in unique_channels
-        )
-        steps.append(
-            f"Force-sync ALL of these ExternalSecrets together (not one-at-a-time): {sync_cmds}"
-        )
-    else:
-        for ch in unique_channels:
-            steps.append(
-                f"Force-sync `{ch.external_secret}` (ns={ch.namespace}): "
-                f"`kubectl annotate externalsecret -n {ch.namespace} {ch.external_secret} "
-                f'force-sync="$(date +%s)" --overwrite` — kubectl patch on the Secret '
-                "itself would silently revert on the next 1h refresh; always go through OpenBao."
-            )
+    steps.append(_verify_step(credential_type))
+    steps.extend(_rollback_steps(discovery))
 
-    consumers = discovery.all_consumers
-    if discovery.is_shared and len(consumers) > 1:
-        steps.append(
-            f"Restart all {len(consumers)} consumer workloads in the SAME batch (not "
-            "sequentially): `kubectl rollout restart <kind>/<name> -n <namespace>` for "
-            "every consumer listed above, issued back-to-back, then wait on all "
-            "`kubectl rollout status` together. A holder/consumer restarted alone while "
-            "others still hold the old value means the two sides authenticate with "
-            "mismatched secrets and requests between them fail until every pod is on the "
-            "new value."
-        )
-        warnings.append(
-            "This shared credential has no built-in dual-secret grace window here — the "
-            "restart batch causes a short auth blip for any in-flight request between the "
-            "holder and its consumers during the cutover. Confirm a brief blip is "
-            "acceptable (or add dual-secret support before rotating) before executing."
-        )
-    else:
-        for con in consumers:
-            steps.append(
-                f"Restart `{con.kind}/{con.name}` (ns={con.namespace}): `kubectl rollout restart {con.kind.lower()}/{con.name} -n {con.namespace}`."
-            )
-
-    if credential_type.verify == "rollout":
-        steps.append(
-            "Verify: `kubectl rollout status` succeeds (Ready) for every consumer AND at "
-            "least one sampled fleet pod's health/readiness endpoint returns healthy — a "
-            "CrashLoop or failing readiness probe after restart means the new secret was "
-            "rejected."
-        )
-    elif credential_type.verify == "openbao-self-lookup":
-        steps.append(
-            "Verify: from the rotated pod, call OpenBao's `/v1/auth/token/lookup-self` "
-            "with the new token and confirm it returns 200 with the expected policies."
-        )
-    elif credential_type.verify == "http-200-check":
-        steps.append(
-            "Verify: call the provider's own authenticated endpoint with the new value "
-            "(e.g. Mattermost `GET /api/v4/users/me`) and confirm HTTP 200."
-        )
-    else:
-        steps.append(
-            "Verify: run the credential's functional check manually before proceeding."
-        )
-
-    for path in discovery.distinct_source_paths:
-        steps.append(
-            f"On verification FAILURE: automatically roll back apps/{path} to its prior "
-            "KV v2 version (`Rollback`/`kv2_get` old version -> `kv2_put`), force-sync the "
-            "affected ExternalSecret(s) again, and restart the same consumer batch again."
-        )
-
-    if credential_type.kind == "provider-issued":
-        steps.append(
-            "After the new value verifies end-to-end, revoke the OLD credential at its "
-            "provider (do this LAST, only after verification passes, so a failed rotation "
-            "can still roll back to a live old credential)."
-        )
+    revoke_step = _revoke_step(credential_type)
+    if revoke_step:
+        steps.append(revoke_step)
 
     return RotationPlan(
         discovery.credential_key, discovery, credential_type, steps, warnings
