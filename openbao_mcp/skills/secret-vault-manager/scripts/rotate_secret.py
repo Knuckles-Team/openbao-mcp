@@ -410,6 +410,134 @@ def cmd_plan(args) -> int:
     return 0 if discovery.found() else 1
 
 
+def _resolve_new_value(args, credential_key: str, credential_type: rl.CredentialType):
+    """The value to write, or ``None`` if execution must refuse (message already printed).
+
+    Priority: an operator-supplied ``--new-value-file`` always wins; otherwise a
+    provider-issued credential is auto-minted in-house if a verified path exists
+    (``AUTO_MINTABLE``) or refused; anything else is generated locally.
+    """
+    if args.new_value_file:
+        return Path(args.new_value_file).read_text().strip()
+
+    if credential_type.kind != "provider-issued":
+        return credential_type.generator()
+
+    minted = mint_provider_value(credential_key)
+    if minted is None:
+        print(
+            f"'{credential_key}' is provider-issued ({credential_type.description}). "
+            "This tool has no verified in-house minting path for it (see AUTO_MINTABLE "
+            "in rotate_secret.py). Mint it via the provider first, save the result to a "
+            "file, and pass --new-value-file <path>. Refusing to invent a value.",
+            file=sys.stderr,
+        )
+        return None
+    new_value, mint_desc = minted
+    print(f"[mint] Auto-minted new value in-house: {mint_desc}")
+    return new_value
+
+
+def _write_new_value(
+    discovery: rl.DiscoveryResult, credential_key: str, new_value: str
+) -> dict[str, int]:
+    """Steps [1/5]+[2/5]: snapshot the prior KV version at every path (for rollback),
+    then read-merge-ONE-write the new value into each. Returns ``{path: prior_version}``.
+    """
+    prior_versions: dict[str, int] = {}
+    print("[1/5] Reading current KV version at each source path (for rollback)...")
+    for path in discovery.distinct_source_paths:
+        meta = kv_metadata(path)
+        prior_versions[path] = meta["current_version"]
+        print(f"  apps/{path}: current_version={meta['current_version']}")
+
+    print("[2/5] Read-merge-ONE-write: writing the new value into every source path...")
+    for path in discovery.distinct_source_paths:
+        result = kv_merge_write(path, credential_key, new_value)
+        print(f"  apps/{path}: wrote new_version={result['new_version']}")
+    return prior_versions
+
+
+def _sync_channels(discovery: rl.DiscoveryResult) -> set[tuple[str, str]]:
+    """Step [3/5]: force-sync every distinct ExternalSecret channel once."""
+    print("[3/5] Force-syncing every ExternalSecret channel...")
+    seen: set[tuple[str, str]] = set()
+    for ch in discovery.channels:
+        key = (ch.namespace, ch.external_secret)
+        if key in seen:
+            continue
+        seen.add(key)
+        force_sync_external_secret(ch.namespace, ch.external_secret)
+        print(f"  {ch.namespace}/{ch.external_secret} force-synced")
+    return seen
+
+
+def _restart_consumers(consumers: list[rl.Consumer]) -> list[rl.Consumer]:
+    """Step [4/5]: restart every consumer workload, collecting the ones that failed."""
+    print("[4/5] Restarting consumer workloads...")
+    failed_consumers = []
+    for con in consumers:
+        try:
+            restart_consumer(con)
+            print(f"  {con.id()} rolled out OK")
+        except subprocess.CalledProcessError as exc:
+            failed_consumers.append(con)
+            print(
+                f"  {con.id()} FAILED to roll out: {exc.stderr[:200]}", file=sys.stderr
+            )
+    return failed_consumers
+
+
+def _verify_rotation(
+    discovery: rl.DiscoveryResult,
+    credential_type: rl.CredentialType,
+    failed_consumers: list[rl.Consumer],
+) -> bool:
+    """Step [5/5]: report verification status. True only if every consumer rolled out."""
+    print("[5/5] Verification...")
+    verification_ok = not failed_consumers
+    if not verification_ok:
+        print(
+            "  Verification FAILED — one or more consumers did not roll out cleanly.",
+            file=sys.stderr,
+        )
+    else:
+        print(
+            f"  All {len(discovery.all_consumers)} consumer(s) report Ready "
+            f"(verify strategy: {credential_type.verify}). Deeper functional verification "
+            "(e.g. an authenticated request through the new credential) should be run "
+            "before declaring success in a real environment."
+        )
+    return verification_ok
+
+
+def _rollback_execution(
+    discovery: rl.DiscoveryResult,
+    prior_versions: dict[str, int],
+    synced_channels: set[tuple[str, str]],
+) -> None:
+    """Undo a failed execute: restore prior KV versions, re-sync, and re-restart
+    (best-effort — a second restart failure during rollback is not fatal)."""
+    print(
+        "\n[ROLLBACK] Restoring prior KV version(s) and re-syncing/restarting...",
+        file=sys.stderr,
+    )
+    for path, version in prior_versions.items():
+        kv_rollback(path, version)
+        print(f"  apps/{path} restored to version {version}", file=sys.stderr)
+    for ns, name in synced_channels:
+        force_sync_external_secret(ns, name)
+    for con in discovery.all_consumers:
+        try:
+            restart_consumer(con)
+        except subprocess.CalledProcessError:
+            pass
+    print(
+        "Rollback complete. Rotation FAILED — original credential is back in place.",
+        file=sys.stderr,
+    )
+
+
 def cmd_execute(args) -> int:
     if not args.confirm:
         print(
@@ -429,93 +557,19 @@ def cmd_execute(args) -> int:
         print("Nothing to execute — no discovered path/consumers.", file=sys.stderr)
         return 1
 
-    if args.new_value_file:
-        new_value = Path(args.new_value_file).read_text().strip()
-    elif credential_type.kind == "provider-issued":
-        minted = mint_provider_value(args.credential_key)
-        if minted is None:
-            print(
-                f"'{args.credential_key}' is provider-issued ({credential_type.description}). "
-                "This tool has no verified in-house minting path for it (see AUTO_MINTABLE "
-                "in rotate_secret.py). Mint it via the provider first, save the result to a "
-                "file, and pass --new-value-file <path>. Refusing to invent a value.",
-                file=sys.stderr,
-            )
-            return 3
-        new_value, mint_desc = minted
-        print(f"[mint] Auto-minted new value in-house: {mint_desc}")
-    else:
-        new_value = credential_type.generator()
+    new_value = _resolve_new_value(args, args.credential_key, credential_type)
+    if new_value is None:
+        return 3
 
-    prior_versions: dict[str, int] = {}
-    print("[1/5] Reading current KV version at each source path (for rollback)...")
-    for path in discovery.distinct_source_paths:
-        meta = kv_metadata(path)
-        prior_versions[path] = meta["current_version"]
-        print(f"  apps/{path}: current_version={meta['current_version']}")
-
-    print("[2/5] Read-merge-ONE-write: writing the new value into every source path...")
-    for path in discovery.distinct_source_paths:
-        result = kv_merge_write(path, args.credential_key, new_value)
-        print(f"  apps/{path}: wrote new_version={result['new_version']}")
+    prior_versions = _write_new_value(discovery, args.credential_key, new_value)
     del new_value
 
-    print("[3/5] Force-syncing every ExternalSecret channel...")
-    seen: set[tuple[str, str]] = set()
-    for ch in discovery.channels:
-        key = (ch.namespace, ch.external_secret)
-        if key in seen:
-            continue
-        seen.add(key)
-        force_sync_external_secret(ch.namespace, ch.external_secret)
-        print(f"  {ch.namespace}/{ch.external_secret} force-synced")
-
-    print("[4/5] Restarting consumer workloads...")
-    failed_consumers = []
-    for con in discovery.all_consumers:
-        try:
-            restart_consumer(con)
-            print(f"  {con.id()} rolled out OK")
-        except subprocess.CalledProcessError as exc:
-            failed_consumers.append(con)
-            print(
-                f"  {con.id()} FAILED to roll out: {exc.stderr[:200]}", file=sys.stderr
-            )
-
-    print("[5/5] Verification...")
-    verification_ok = not failed_consumers
-    if not verification_ok:
-        print(
-            "  Verification FAILED — one or more consumers did not roll out cleanly.",
-            file=sys.stderr,
-        )
-    else:
-        print(
-            f"  All {len(discovery.all_consumers)} consumer(s) report Ready "
-            f"(verify strategy: {credential_type.verify}). Deeper functional verification "
-            "(e.g. an authenticated request through the new credential) should be run "
-            "before declaring success in a real environment."
-        )
+    synced_channels = _sync_channels(discovery)
+    failed_consumers = _restart_consumers(discovery.all_consumers)
+    verification_ok = _verify_rotation(discovery, credential_type, failed_consumers)
 
     if not verification_ok:
-        print(
-            "\n[ROLLBACK] Restoring prior KV version(s) and re-syncing/restarting...",
-            file=sys.stderr,
-        )
-        for path, version in prior_versions.items():
-            kv_rollback(path, version)
-            print(f"  apps/{path} restored to version {version}", file=sys.stderr)
-        for ns, name in seen:
-            force_sync_external_secret(ns, name)
-        for con in discovery.all_consumers:
-            try:
-                restart_consumer(con)
-            except subprocess.CalledProcessError:
-                pass
-        print(
-            "Rollback complete. Rotation FAILED — original credential is back in place.",
-            file=sys.stderr,
-        )
+        _rollback_execution(discovery, prior_versions, synced_channels)
         return 1
 
     if credential_type.kind == "provider-issued":
