@@ -70,7 +70,7 @@ def _deployment(name, namespace, secret_ref=None, explicit=None, kind="Deploymen
 def test_discover_single_consumer_explicit_data_entry():
     es = [
         _external_secret(
-            "mattermost-mcp-secrets",
+            "mattermost-key",
             "apps",
             data=[
                 {
@@ -83,12 +83,8 @@ def test_discover_single_consumer_explicit_data_entry():
             ],
         )
     ]
-    secret_keys = {
-        ("apps", "mattermost-mcp-secrets"): {"MATTERMOST_TOKEN", "MATTERMOST_URL"}
-    }
-    workloads = [
-        _deployment("mattermost-mcp", "apps", secret_ref="mattermost-mcp-secrets")
-    ]
+    secret_keys = {("apps", "mattermost-key"): {"MATTERMOST_TOKEN", "MATTERMOST_URL"}}
+    workloads = [_deployment("mattermost-mcp", "apps", secret_ref="mattermost-key")]
 
     result = rl.discover_credential("MATTERMOST_TOKEN", es, secret_keys, workloads)
 
@@ -151,32 +147,30 @@ def test_discover_dataFrom_extract_requires_key_present_in_target_secret():
 def test_discover_multi_path_shared_secret():
     es = [
         _external_secret(
-            "epistemic-graph-secrets",
+            "epistemic-key",
             "platform",
             data_from_extract="agent-utilities/deployment",
         ),
         _external_secret(
             "mcp-engine-auth", "apps", data_from_extract="agent-utilities/deployment"
         ),
-        _external_secret("graph-os-secrets", "platform", data_from_extract="graph-os"),
+        _external_secret("graph-os-key", "platform", data_from_extract="graph-os"),
     ]
     secret_keys = {
-        ("platform", "epistemic-graph-secrets"): {
+        ("platform", "epistemic-key"): {
             "GRAPH_SERVICE_AUTH_SECRET",
             "STATE_DB_URI",
         },
         ("apps", "mcp-engine-auth"): {"GRAPH_SERVICE_AUTH_SECRET"},
-        ("platform", "graph-os-secrets"): {
+        ("platform", "graph-os-key"): {
             "GRAPH_SERVICE_AUTH_SECRET",
             "OIDC_CLIENT_ID",
         },
     }
     workloads = [
-        _deployment(
-            "epistemic-graph", "platform", secret_ref="epistemic-graph-secrets"
-        ),
-        _deployment("graph-os", "platform", secret_ref="graph-os-secrets"),
-        _deployment("graph-os-host", "platform", secret_ref="graph-os-secrets"),
+        _deployment("epistemic-graph", "platform", secret_ref="epistemic-key"),
+        _deployment("graph-os", "platform", secret_ref="graph-os-key"),
+        _deployment("graph-os-host", "platform", secret_ref="graph-os-key"),
     ] + [
         _deployment(f"svc{i}-mcp", "apps", secret_ref="mcp-engine-auth")
         for i in range(36)
@@ -288,7 +282,7 @@ def test_plan_not_found_has_no_steps():
 def test_plan_single_consumer_no_shared_warning():
     es = [
         _external_secret(
-            "mattermost-mcp-secrets",
+            "mattermost-key",
             "apps",
             data=[
                 {
@@ -298,10 +292,8 @@ def test_plan_single_consumer_no_shared_warning():
             ],
         )
     ]
-    secret_keys = {("apps", "mattermost-mcp-secrets"): {"MATTERMOST_TOKEN"}}
-    workloads = [
-        _deployment("mattermost-mcp", "apps", secret_ref="mattermost-mcp-secrets")
-    ]
+    secret_keys = {("apps", "mattermost-key"): {"MATTERMOST_TOKEN"}}
+    workloads = [_deployment("mattermost-mcp", "apps", secret_ref="mattermost-key")]
     discovery = rl.discover_credential("MATTERMOST_TOKEN", es, secret_keys, workloads)
     ct = rl.classify_credential("MATTERMOST_TOKEN")
     plan = rl.build_plan(discovery, ct)
@@ -317,25 +309,23 @@ def test_plan_single_consumer_no_shared_warning():
 def test_plan_shared_secret_has_batch_restart_and_multi_path_warning():
     es = [
         _external_secret(
-            "epistemic-graph-secrets",
+            "epistemic-key",
             "platform",
             data_from_extract="agent-utilities/deployment",
         ),
         _external_secret(
             "mcp-engine-auth", "apps", data_from_extract="agent-utilities/deployment"
         ),
-        _external_secret("graph-os-secrets", "platform", data_from_extract="graph-os"),
+        _external_secret("graph-os-key", "platform", data_from_extract="graph-os"),
     ]
     secret_keys = {
-        ("platform", "epistemic-graph-secrets"): {"GRAPH_SERVICE_AUTH_SECRET"},
+        ("platform", "epistemic-key"): {"GRAPH_SERVICE_AUTH_SECRET"},
         ("apps", "mcp-engine-auth"): {"GRAPH_SERVICE_AUTH_SECRET"},
-        ("platform", "graph-os-secrets"): {"GRAPH_SERVICE_AUTH_SECRET"},
+        ("platform", "graph-os-key"): {"GRAPH_SERVICE_AUTH_SECRET"},
     }
     workloads = [
-        _deployment(
-            "epistemic-graph", "platform", secret_ref="epistemic-graph-secrets"
-        ),
-        _deployment("graph-os", "platform", secret_ref="graph-os-secrets"),
+        _deployment("epistemic-graph", "platform", secret_ref="epistemic-key"),
+        _deployment("graph-os", "platform", secret_ref="graph-os-key"),
     ] + [
         _deployment(f"svc{i}-mcp", "apps", secret_ref="mcp-engine-auth")
         for i in range(5)
@@ -355,11 +345,9 @@ def test_plan_shared_secret_has_batch_restart_and_multi_path_warning():
 
 
 def test_plan_includes_rollback_step_per_source_path():
-    es = [
-        _external_secret("openbao-mcp-secrets", "apps", data_from_extract="openbao-mcp")
-    ]
-    secret_keys = {("apps", "openbao-mcp-secrets"): {"OPENBAO_TOKEN"}}
-    workloads = [_deployment("openbao-mcp", "apps", secret_ref="openbao-mcp-secrets")]
+    es = [_external_secret("openbao-key", "apps", data_from_extract="openbao-mcp")]
+    secret_keys = {("apps", "openbao-key"): {"OPENBAO_TOKEN"}}
+    workloads = [_deployment("openbao-mcp", "apps", secret_ref="openbao-key")]
     discovery = rl.discover_credential("OPENBAO_TOKEN", es, secret_keys, workloads)
     ct = rl.classify_credential("OPENBAO_TOKEN")
     plan = rl.build_plan(discovery, ct)
@@ -401,7 +389,7 @@ def test_plan_verify_step_falls_back_to_manual_for_unlisted_verify_strategy():
     """
     es = [
         _external_secret(
-            "app-client-secrets",
+            "app-client-key",
             "apps",
             data=[
                 {
@@ -411,11 +399,9 @@ def test_plan_verify_step_falls_back_to_manual_for_unlisted_verify_strategy():
             ],
         )
     ]
-    secret_keys = {("apps", "app-client-secrets"): {"APP_CLIENT_SECRET"}}
-    workloads = [_deployment("app", "apps", secret_ref="app-client-secrets")]
-    discovery = rl.discover_credential(
-        "APP_CLIENT_SECRET", es, secret_keys, workloads
-    )
+    secret_keys = {("apps", "app-client-key"): {"APP_CLIENT_SECRET"}}
+    workloads = [_deployment("app", "apps", secret_ref="app-client-key")]
+    discovery = rl.discover_credential("APP_CLIENT_SECRET", es, secret_keys, workloads)
     ct = rl.classify_credential("APP_CLIENT_SECRET")
     assert ct.verify == "manual"
 
