@@ -49,7 +49,18 @@ def _dispatch_sys_action(action: str, client, kwargs: dict) -> Any:
 def register_sys_tools(mcp: FastMCP):
     """Register OpenBao MCP sys tools."""
 
-    @mcp.tool(tags={"sys"})
+    @mcp.tool(
+        tags={"sys"},
+        annotations={
+            "readOnlyHint": False,
+            "destructiveHint": False,
+            "idempotentHint": False,
+            "openWorldHint": True,
+        },
+        meta={
+            "eg.annotations": {"modalities_in": ["text"], "modalities_out": ["text"]}
+        },
+    )
     async def openbao_mcp_sys(
         action: Literal[
             "enable_mount",
