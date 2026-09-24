@@ -9,7 +9,7 @@ description = "OpenBao Secrets Engine MCP Server for Agentic AI!"
 readme = "README.md"
 classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
 requires-python = ">=3.12, <3.15"
-dependencies = [ "agent-connector-sdk>=0.1.0,<1.0.0",]
+dependencies = [ "agent-connector-sdk>=0.1.0,<1.0.0", "agent-utilities>=2.0.0,<3.0.0",]
 [[project.authors]]
 name = "Project Maintainers"
 email = "maintainers@users.noreply.github.com"
@@ -40,6 +40,9 @@ members = ["."]
 
 [tool.setuptools]
 include-package-data = true
+
+[tool.uv.sources]
+agent-utilities = { path = ".uv-workspace-siblings/agent-utilities", editable = true }
 
 [tool.ruff]
 line-length = 88
