@@ -105,3 +105,41 @@ def register_sys_tools(mcp: FastMCP):
         listed = len(data) if isinstance(data, dict) else 0
         result = ingest_mounts(mounts, server_info=server_info)
         return {"listed": listed, "ingested": result}
+
+    @mcp.tool(tags={"sys", "kg", "audit", "security"})
+    async def openbao_ingest_audit_log(
+        params_json: str = Field(
+            default="{}",
+            description=(
+                "JSON with optional 'path' (file audit device; default "
+                "OPENBAO_AUDIT_LOG_PATH), 'offset' (byte offset the previous call "
+                "returned as next_offset) and 'max'."
+            ),
+        ),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> dict:
+        """EH-410: ingest the OpenBao file audit device as PSEUDONYMIZED
+        ``:SecretAccessEvent`` nodes (secret paths and identities as keyed HMAC
+        references, IPs truncated, request/response data never read)."""
+        import json as _json
+
+        from agent_utilities.core.config import setting
+
+        from openbao_mcp.audit_feed import ingest_audit_entries, read_audit_log
+
+        try:
+            kwargs = _json.loads(params_json) if params_json else {}
+        except ValueError:
+            return {"error": "params_json is not valid JSON"}
+        path = kwargs.get("path") or setting("OPENBAO_AUDIT_LOG_PATH", "")
+        if not path:
+            return {
+                "error": "No audit log path (params 'path' or OPENBAO_AUDIT_LOG_PATH)."
+            }
+        if ctx:
+            await ctx.info("Ingesting the OpenBao audit log (pseudonymized)...")
+        entries, next_offset = read_audit_log(
+            path, int(kwargs.get("offset", 0)), int(kwargs.get("max", 1000))
+        )
+        result = ingest_audit_entries(entries)
+        return {"read": len(entries), "ingested": result, "next_offset": next_offset}
