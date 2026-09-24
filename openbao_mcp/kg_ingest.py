@@ -15,12 +15,6 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from agent_utilities.knowledge_graph.memory.native_ingest import (
-    NativeIngestError,
-)
-from agent_utilities.knowledge_graph.memory.native_ingest import (
-    ingest_entities as _native_ingest_entities,
-)
 
 logger = logging.getLogger("openbao_mcp.kg")
 
@@ -28,24 +22,12 @@ _SOURCE = "openbao-mcp"
 _DOMAIN = "openbao"
 
 
-def ingest_entities(
-    entities: list[dict[str, Any]],
-    relationships: list[dict[str, Any]] | None = None,
-    *,
-    source: str = _SOURCE,
-    domain: str = _DOMAIN,
-    client: Any | None = None,
-    graph: str | None = None,
-) -> dict[str, int]:
-    """Write canonical typed nodes and relationships in one native transaction."""
-    return _native_ingest_entities(
-        entities,
-        relationships,
-        source=source,
-        domain=domain,
-        client=client,
-        graph=graph,
-    )
+def ingest_entities(*args: object, **kwargs: object) -> object:
+    """Write canonical typed nodes and relationships in one native transaction.
+
+    SDK-GAP: Always raises now; see KnowledgeGraphIngestUnavailable.
+    """
+    _kg_unavailable("ingest_entities")
 
 
 # --- mount metadata (whitelist — NEVER any secret value) -----------------------------
@@ -122,14 +104,12 @@ def _mount_node(raw_path: str, cfg: Any) -> tuple[str, dict[str, Any]] | None:
     return node_id, node
 
 
-def _validated_mount_data(mounts: dict[str, Any] | None) -> dict[str, Any]:
-    """The ``sys/mounts`` payload's mount-keyed mapping, or raise if it is malformed."""
-    if not mounts:
-        raise NativeIngestError("OpenBao mount ingestion requires mount metadata")
-    data = mounts.get("data") if isinstance(mounts.get("data"), dict) else mounts
-    if not isinstance(data, dict):
-        raise NativeIngestError("OpenBao mount metadata must be a mapping")
-    return data
+def _validated_mount_data(*args: object, **kwargs: object) -> object:
+    """The ``sys/mounts`` payload's mount-keyed mapping, or raise if it is malformed.
+
+    SDK-GAP: Always raises now; see KnowledgeGraphIngestUnavailable.
+    """
+    _kg_unavailable("_validated_mount_data")
 
 
 def ingest_mounts(
@@ -168,31 +148,29 @@ def ingest_mounts(
     return ingest_entities(entities, relationships, client=client, graph=graph)
 
 
-def ingest_policies(
-    policy_names: list[str] | None,
-    *,
-    server_info: dict[str, Any] | None = None,
-    client: Any | None = None,
-    graph: str | None = None,
-) -> dict[str, int]:
+def ingest_policies(*args: object, **kwargs: object) -> object:
     """Map a list of ACL policy NAMES -> ``:Policy`` nodes (metadata only, no rules).
 
-    ``policy_names`` is the list under a ``sys/policies/acl`` LIST (the ``keys``). Only the
-    policy identity is ingested — never the HCL rules, which reference secret paths.
+    SDK-GAP: Always raises now; see KnowledgeGraphIngestUnavailable.
     """
-    if not policy_names:
-        raise NativeIngestError("OpenBao policy ingestion requires policy names")
-    entities: list[dict[str, Any]] = []
-    server_id, _ = _server_id(server_info)
-    for name in policy_names:
-        if not name:
-            continue
-        node_id = f"openbao:policy:{name}"
-        node: dict[str, Any] = {
-            "id": node_id,
-            "node_type": "Policy",
-            "name": name,
-            "externalToolId": str(name),
-        }
-        entities.append(node)
-    return ingest_entities(entities, None, client=client, graph=graph)
+    _kg_unavailable("ingest_policies")
+
+
+class KnowledgeGraphIngestUnavailable(RuntimeError):
+    """Direct-to-graph ingestion is unavailable from this connector.
+
+    SDK-GAP (EH-48x, /var/tmp/l9/finish/au-decon-G4c/SDK-GAPS.md): raised in
+    place of the old ``agent_utilities.knowledge_graph`` native-ingest call --
+    agent-connector-sdk has no facade over EG's typed ingestion protocol yet,
+    and the fleet precedent (agents/world-reference-mcp) moves direct-to-graph
+    delivery to agent_connector_sdk.runner/sinks at the deployment layer, out
+    of connector scope.
+    """
+
+
+def _kg_unavailable(name: str) -> None:
+    raise KnowledgeGraphIngestUnavailable(
+        f"{name}: direct-to-graph ingestion moved out of connector code "
+        "(agent-utilities removed); no agent-connector-sdk facade exists yet "
+        "-- see SDK-GAPS.md"
+    )

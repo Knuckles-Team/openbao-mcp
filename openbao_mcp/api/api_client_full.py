@@ -6,7 +6,7 @@ from typing import Any
 
 import requests
 import requests.structures
-from agent_utilities.core.transport_security import ResolvedTLSProfile
+from agent_connector_sdk.tls.profile import ResolvedTLSProfile
 
 from openbao_mcp.api.api_client_base import ApiClientBase
 
