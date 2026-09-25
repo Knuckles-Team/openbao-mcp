@@ -171,10 +171,11 @@ The following declarative FastMCP tools are registered and available to upstream
 
 <!-- MCP-TOOLS-TABLE:START -->
 
-#### Condensed action-routed tools (default — `MCP_TOOL_MODE=condensed`)
+#### Condensed action-routed tools (`MCP_TOOL_MODE=condensed`)
 
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
+| `openbao_ingest_mounts` | `SYSTOOL` | Natively ingest OpenBao secrets-engine METADATA into epistemic-graph. |
 | `openbao_mcp_auth` | `AUTHTOOL` | Manage OpenBao auth operations. |
 | `openbao_mcp_kv` | `SECRETSTOOL` | Manage OpenBao Key-Value v1 and v2 engines. |
 | `openbao_mcp_logical` | `SECRETSTOOL` | Manage OpenBao logical operations. |
@@ -259,14 +260,14 @@ The following declarative FastMCP tools are registered and available to upstream
 | `openbao_enable_mount` | `APITOOL` | Enable a secrets engine mount. |
 | `openbao_get_health` | `APITOOL` | Get OpenBao engine health status. |
 | `openbao_get_internal_openapi_spec` | `APITOOL` | Fetch dynamically compiled OpenAPI schema spec. |
-| `openbao_get_mounts` | `APITOOL` | Get mounted secret engines. |
+| `openbao_get_mounts` | `APITOOL` | Get mounted secret engines, scoped to the caller's identity entitlements. |
 | `openbao_list_secrets` | `APITOOL` | List secrets under a path. |
 | `openbao_read_secret` | `APITOOL` | Read a secret key-value path. |
 | `openbao_write_secret` | `APITOOL` | Write a secret key-value path. |
 
 </details>
 
-_5 action-routed tool(s) (default) · 75 verbose 1:1 tool(s). Each is enabled unless its `<DOMAIN>TOOL` toggle is set false; `MCP_TOOL_MODE` selects the surface (`condensed` default · `verbose` 1:1 · `both`). Auto-generated — do not edit._
+_6 action-routed tool(s) · 75 verbose 1:1 tool(s). Each is enabled unless its `<DOMAIN>TOOL` toggle is set false; `MCP_TOOL_MODE` selects the surface (**`intent` default** — the six verb-tools, granular set loaded on demand · `condensed` action-routed · `verbose` 1:1 · `both`). Auto-generated — do not edit._
 <!-- MCP-TOOLS-TABLE:END -->
 
 See [docs/overview.md](docs/overview.md) or [docs/concepts.md](docs/concepts.md) for deeper operational examples.
@@ -405,13 +406,13 @@ configured secret provider.
 | `OPENBAO_MCP_BASE_URL` | `http://127.0.0.1:8200` | Alternative base URL fallback for user-level client endpoints. |
 | `OPENBAO_MCP_USERNAME` | — | Client credentials for user authentication methods. |
 | `OPENBAO_MCP_PASSWORD` | secret-injected |  |
-| `TLS_PROFILE` | `private-ca` | AgentConfig named transport profile |
-| `TLS_PROFILE_REF` | `secret://transport/provider` | Direct runtime profile reference |
-| `TLS_PROFILES_REF` | `secret://transport/catalog` | Named runtime profile catalog |
+| `OPENBAO_TLS_PROFILE` | `private-ca` | AgentConfig named transport profile |
+| `OPENBAO_TLS_PROFILE_REF` | `secret://transport/provider` | Direct runtime profile reference |
 | `SECRETSTOOL` | `True` | Set to True/False to enable or disable specific tool categories in the MCP server. |
 | `SYSTOOL` | `True` |  |
 | `AUTHTOOL` | `True` |  |
 | `SSHTOOL` | `True` |  |
+| `OPENBAO_MCP_AGENT_IMAGE` | `registry.example.invalid/openbao-mcp-agent@sha256:<digest>` |  |
 
 #### Inherited agent-utilities variables (apply to every connector)
 
@@ -438,8 +439,8 @@ configured secret provider.
 | `DEBUG` | `False` | Verbose logging |
 | `PYTHONUNBUFFERED` | `1` | Unbuffered stdout (recommended in containers) |
 | `MCP_URL` | `http://localhost:8000/mcp` | URL of the MCP server the agent connects to |
-| `PROVIDER` | `openai` | LLM provider for the agent |
-| `MODEL_ID` | `gpt-4o` | Model id for the agent |
+| `PROVIDER` | — | Operator-configured LLM provider for the agent |
+| `MODEL_ID` | — | Operator-configured model id for the agent |
 | `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
 _14 package + 24 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._

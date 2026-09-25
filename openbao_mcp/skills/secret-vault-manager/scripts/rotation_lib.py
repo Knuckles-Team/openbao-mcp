@@ -158,9 +158,7 @@ def _container_secret_consumers(
     for env in container.get("env", []) or []:
         skr = env.get("valueFrom", {}).get("secretKeyRef", {})
         if skr.get("name") == secret_name:
-            consumers.append(
-                Consumer(kind, ns, name, cname, f"env:{env.get('name')}")
-            )
+            consumers.append(Consumer(kind, ns, name, cname, f"env:{env.get('name')}"))
     return consumers
 
 
@@ -442,7 +440,9 @@ def _unique_channels(discovery: DiscoveryResult) -> list[Channel]:
     return unique_channels
 
 
-def _sync_steps(discovery: DiscoveryResult, unique_channels: list[Channel]) -> list[str]:
+def _sync_steps(
+    discovery: DiscoveryResult, unique_channels: list[Channel]
+) -> list[str]:
     if discovery.is_shared:
         sync_cmds = ", ".join(
             f"`kubectl annotate externalsecret -n {ch.namespace} {ch.external_secret} "

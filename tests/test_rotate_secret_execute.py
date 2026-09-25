@@ -16,8 +16,6 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
-import pytest
-
 _SCRIPT = (
     Path(__file__).resolve().parents[1]
     / "openbao_mcp"
@@ -49,9 +47,9 @@ def _args(confirm=True, new_value_file=None, credential_key="TEST_KEY"):
 def _one_consumer_discovery(credential_key="TEST_KEY", path="test-path"):
     consumer = rl.Consumer("Deployment", "apps", "test-svc", "test-svc", "envFrom")
     channel = rl.Channel(
-        external_secret="test-svc-secrets",
+        external_secret="test-secret",
         namespace="apps",
-        target_secret="test-svc-secrets",
+        target_secret="test-secret",
         source_path=path,
         source_property=credential_key,
         consumers=[consumer],
@@ -90,7 +88,9 @@ def test_cmd_execute_returns_1_when_discovery_not_found(monkeypatch):
     monkeypatch.setattr(
         rs, "_discovery_from_args", lambda args: rl.discover_credential("X", [], {}, [])
     )
-    monkeypatch.setattr(rl, "classify_credential", lambda key: _generated_credential_type())
+    monkeypatch.setattr(
+        rl, "classify_credential", lambda key: _generated_credential_type()
+    )
 
     def _boom(*a, **k):
         raise AssertionError("no write should happen when nothing was discovered")
@@ -103,11 +103,15 @@ def test_cmd_execute_returns_1_when_discovery_not_found(monkeypatch):
 def test_cmd_execute_generated_credential_happy_path(monkeypatch):
     discovery = _one_consumer_discovery()
     monkeypatch.setattr(rs, "_discovery_from_args", lambda args: discovery)
-    monkeypatch.setattr(rl, "classify_credential", lambda key: _generated_credential_type())
+    monkeypatch.setattr(
+        rl, "classify_credential", lambda key: _generated_credential_type()
+    )
 
     calls = {"merge_write": [], "sync": [], "restart": [], "rollback": []}
     monkeypatch.setattr(
-        rs, "kv_metadata", lambda path: {"current_version": 3, "versions": ["1", "2", "3"]}
+        rs,
+        "kv_metadata",
+        lambda path: {"current_version": 3, "versions": ["1", "2", "3"]},
     )
 
     def fake_merge_write(path, key, value):
@@ -131,7 +135,7 @@ def test_cmd_execute_generated_credential_happy_path(monkeypatch):
 
     assert result == 0
     assert calls["merge_write"] == [("test-path", "TEST_KEY", "GENERATED-VALUE")]
-    assert calls["sync"] == [("apps", "test-svc-secrets")]
+    assert calls["sync"] == [("apps", "test-secret")]
     assert calls["restart"] == ["Deployment/apps/test-svc"]
     assert calls["rollback"] == []  # no rollback on a clean run
 
@@ -139,7 +143,9 @@ def test_cmd_execute_generated_credential_happy_path(monkeypatch):
 def test_cmd_execute_rolls_back_on_consumer_restart_failure(monkeypatch):
     discovery = _one_consumer_discovery()
     monkeypatch.setattr(rs, "_discovery_from_args", lambda args: discovery)
-    monkeypatch.setattr(rl, "classify_credential", lambda key: _generated_credential_type())
+    monkeypatch.setattr(
+        rl, "classify_credential", lambda key: _generated_credential_type()
+    )
 
     calls = {"restart": 0, "rollback": []}
     monkeypatch.setattr(rs, "kv_metadata", lambda path: {"current_version": 3})

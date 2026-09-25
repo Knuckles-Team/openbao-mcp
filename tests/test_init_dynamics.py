@@ -30,4 +30,4 @@ def test_getattr_raises_attribute_error_for_unknown_name():
     import openbao_mcp
 
     with pytest.raises(AttributeError, match="has no attribute 'totally_unknown_name'"):
-        openbao_mcp.totally_unknown_name
+        _unknown = openbao_mcp.totally_unknown_name
