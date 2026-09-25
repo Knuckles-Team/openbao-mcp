@@ -1,8 +1,8 @@
 {
-  "algorithm": "agent-utilities:mcp-tool-schema-compat:v1",
+  "algorithm": "agent-connector-sdk:mcp-tool-contract-compat:v2",
   "connector": "openbao-mcp",
   "schema_version": "1",
   "tools": {
-    "openbao_mcp_sys": "724f3c6488c9adc91a053d90f2723217bcb796687b1df96ec83f74846bc75ffd"
+    "openbao_mcp_sys": "61ce3bd82e744097498b0a9d7f2734f4ad69bfdfae21a5397a545b961ead068e"
   }
 }

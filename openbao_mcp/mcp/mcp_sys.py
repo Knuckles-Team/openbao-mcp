@@ -1,6 +1,7 @@
 """MCP tools for sys operations."""
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any, Literal
 
 from fastmcp import Context, FastMCP
 from fastmcp.dependencies import Depends
@@ -13,8 +14,8 @@ _SYS_LEGACY_ACTIONS: dict[str, Callable[[Any, dict], Any]] = {
     "get_health": lambda client, kwargs: client.get_health(**kwargs),
     "get_mounts": lambda client, kwargs: client.get_mounts(**kwargs),
     "enable_mount": lambda client, kwargs: client.enable_mount(**kwargs),
-    "get_internal_openapi_spec": lambda client, kwargs: client.get_internal_openapi_spec(
-        **kwargs
+    "get_internal_openapi_spec": lambda client, kwargs: (
+        client.get_internal_openapi_spec(**kwargs)
     ),
 }
 
@@ -48,9 +49,35 @@ def _dispatch_sys_action(action: str, client, kwargs: dict) -> Any:
 def register_sys_tools(mcp: FastMCP):
     """Register OpenBao MCP sys tools."""
 
-    @mcp.tool(tags={"sys"})
+    @mcp.tool(
+        tags={"sys"},
+        annotations={
+            "readOnlyHint": False,
+            "destructiveHint": False,
+            "idempotentHint": False,
+            "openWorldHint": True,
+        },
+        meta={
+            "eg.annotations": {"modalities_in": ["text"], "modalities_out": ["text"]}
+        },
+    )
     async def openbao_mcp_sys(
-        action: str = Field(
+        action: Literal[
+            "enable_mount",
+            "get_health",
+            "get_internal_openapi_spec",
+            "get_mounts",
+            "ha_status",
+            "health",
+            "init",
+            "init_status",
+            "leader",
+            "raft_autopilot_state",
+            "raft_join",
+            "seal",
+            "seal_status",
+            "unseal",
+        ] = Field(
             description=(
                 "Action: 'get_health', 'get_mounts', 'enable_mount', 'get_internal_openapi_spec', "
                 "'init', 'init_status', 'seal', 'unseal', 'seal_status', 'health', 'leader', "
