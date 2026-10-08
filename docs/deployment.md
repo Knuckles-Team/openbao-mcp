@@ -120,7 +120,7 @@ Optional fallbacks and username/password authentication are also recognized:
 `OPENBAO_MCP_PASSWORD`. Plus `HOST` / `PORT` / `TRANSPORT` for HTTP transports. The
 full set is documented in
 [`.env.example`](https://github.com/Knuckles-Team/openbao-mcp/blob/main/.env.example).
-Copy it to `.env` and fill in only what you use.
+Copy it to `.env` and fill in only what the operator use.
 
 ## Docker Compose
 
@@ -202,7 +202,7 @@ services:
 
 ## Behind a Caddy reverse proxy
 
-Expose the HTTP server on a hostname with automatic TLS. Add to your `Caddyfile`:
+Expose the HTTP server on a hostname with automatic TLS. Add to the operator's `Caddyfile`:
 
 ```caddy
 # Internal (self-signed) — homelab .example.invalid zone
@@ -246,7 +246,7 @@ this as a tool.
 
 ## Register with an MCP client
 
-Add to your client's `mcp_config.json` (multiplexer nickname `bao`):
+Add to the operator's client's `mcp_config.json` (multiplexer nickname `bao`):
 
 ```json
 {

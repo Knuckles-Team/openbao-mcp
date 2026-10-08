@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial dynamic facade API client implementation.
 - FastMCP server entry points and modular tools.
 - Rich documentation templates, including standardized environment configuration.
-- Comprehensive test suite validating startup and facade execution.
+- Complete test suite validating startup and facade execution.
 - Standardized MIT License.
 
 [Unreleased]: https://github.com/genius-agents/openbao-mcp/compare/v0.15.0...HEAD
