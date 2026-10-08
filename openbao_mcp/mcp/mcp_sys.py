@@ -1,6 +1,7 @@
 """MCP tools for sys operations."""
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from fastmcp import Context, FastMCP
 from fastmcp.dependencies import Depends
@@ -13,8 +14,8 @@ _SYS_LEGACY_ACTIONS: dict[str, Callable[[Any, dict], Any]] = {
     "get_health": lambda client, kwargs: client.get_health(**kwargs),
     "get_mounts": lambda client, kwargs: client.get_mounts(**kwargs),
     "enable_mount": lambda client, kwargs: client.enable_mount(**kwargs),
-    "get_internal_openapi_spec": lambda client, kwargs: client.get_internal_openapi_spec(
-        **kwargs
+    "get_internal_openapi_spec": lambda client, kwargs: (
+        client.get_internal_openapi_spec(**kwargs)
     ),
 }
 
