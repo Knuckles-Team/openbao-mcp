@@ -1,7 +1,7 @@
 # Usage — API / CLI / MCP
 
 `openbao-mcp` exposes the same capability three ways: as **MCP tools** an agent calls,
-as a **Python API** (`Api`) you import, and as a **CLI** (the `openbao-mcp` and
+as a **Python API** (`Api`) the operator import, and as a **CLI** (the `openbao-mcp` and
 `openbao-agent` console scripts). The architecture and the dynamic facade are
 described in [Overview](overview.md).
 
