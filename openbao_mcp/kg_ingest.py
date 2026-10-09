@@ -4,10 +4,10 @@ Only whitelisted mount paths, engine types, accessors, policy names, and server 
 are accepted. Secret values, credentials, tokens, and unseal material are never read or
 materialized.
 
-All writes use the required ``agent_utilities.knowledge_graph.memory.native_ingest``
-primitive. Nodes use canonical ``node_type`` and edges use canonical ``relationship``;
-nodes and edges commit in one native transaction. Missing engine dependencies, rejected
-records, conflicts, and transaction failures propagate as ``NativeIngestError``.
+All writes go through ``agent_connector_sdk.ingest`` -- the generated ``SourceIngest``
+client, not a local ingestion helper. Nodes use canonical ``node_type`` and edges use
+canonical ``relationship``; nodes and edges commit in one request. Missing engine
+dependencies, rejected records, and transaction failures propagate as ``IngestError``.
 """
 
 from __future__ import annotations
@@ -15,37 +15,68 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from agent_utilities.knowledge_graph.memory.native_ingest import (
-    NativeIngestError,
-)
-from agent_utilities.knowledge_graph.memory.native_ingest import (
-    ingest_entities as _native_ingest_entities,
+from agent_connector_sdk.ingest import (
+    ChangeSet,
+    Entity,
+    IngestBinding,
+    IngestError,
+    KnowledgeIngest,
+    Relationship,
+    current_ingest,
 )
 
 logger = logging.getLogger("openbao_mcp.kg")
 
-_SOURCE = "openbao-mcp"
-_DOMAIN = "openbao"
+_BINDING = IngestBinding(connector="openbao-mcp", stream="openbao")
+
+_ENTITY_RESERVED_KEYS = frozenset({"id", "node_type"})
+_RELATIONSHIP_RESERVED_KEYS = frozenset({"source", "target", "relationship"})
 
 
-def ingest_entities(
+def _to_entity(record: dict[str, Any]) -> Entity:
+    return Entity(
+        id=record.get("id"),
+        node_type=record.get("node_type"),
+        properties={
+            key: value
+            for key, value in record.items()
+            if key not in _ENTITY_RESERVED_KEYS
+        },
+    )
+
+
+def _to_relationship(record: dict[str, Any]) -> Relationship:
+    properties = {
+        key: value
+        for key, value in record.items()
+        if key not in _RELATIONSHIP_RESERVED_KEYS
+    }
+    return Relationship(
+        source=record["source"],
+        target=record["target"],
+        relationship=record["relationship"],
+        properties=properties or None,
+    )
+
+
+async def ingest_entities(
     entities: list[dict[str, Any]],
     relationships: list[dict[str, Any]] | None = None,
     *,
-    source: str = _SOURCE,
-    domain: str = _DOMAIN,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
-    """Write canonical typed nodes and relationships in one native transaction."""
-    return _native_ingest_entities(
-        entities,
-        relationships,
-        source=source,
-        domain=domain,
-        client=client,
-        graph=graph,
+    """Write canonical typed nodes and relationships via the SDK ingest facade."""
+    if not entities:
+        raise IngestError("ingest_entities needs at least one entity")
+    change_set = ChangeSet(
+        entities=tuple(_to_entity(entity) for entity in entities),
+        relationships=tuple(
+            _to_relationship(relationship) for relationship in relationships or ()
+        ),
     )
+    service = ingest or current_ingest()
+    receipt = await service.submit(_BINDING, change_set)
+    return {"nodes": receipt.affected_count, "edges": receipt.relationship_count}
 
 
 # --- mount metadata (whitelist — NEVER any secret value) -----------------------------
@@ -125,19 +156,18 @@ def _mount_node(raw_path: str, cfg: Any) -> tuple[str, dict[str, Any]] | None:
 def _validated_mount_data(mounts: dict[str, Any] | None) -> dict[str, Any]:
     """The ``sys/mounts`` payload's mount-keyed mapping, or raise if it is malformed."""
     if not mounts:
-        raise NativeIngestError("OpenBao mount ingestion requires mount metadata")
+        raise IngestError("OpenBao mount ingestion requires mount metadata")
     data = mounts.get("data") if isinstance(mounts.get("data"), dict) else mounts
     if not isinstance(data, dict):
-        raise NativeIngestError("OpenBao mount metadata must be a mapping")
+        raise IngestError("OpenBao mount metadata must be a mapping")
     return data
 
 
-def ingest_mounts(
+async def ingest_mounts(
     mounts: dict[str, Any] | None,
     *,
     server_info: dict[str, Any] | None = None,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
     """Map an OpenBao ``sys/mounts`` response -> ``:SecretMount`` (+ ``:VaultServer``) nodes.
 
@@ -165,15 +195,14 @@ def ingest_mounts(
                 {"source": node_id, "target": server_id, "relationship": "mountedOn"}
             )
 
-    return ingest_entities(entities, relationships, client=client, graph=graph)
+    return await ingest_entities(entities, relationships, ingest=ingest)
 
 
-def ingest_policies(
+async def ingest_policies(
     policy_names: list[str] | None,
     *,
     server_info: dict[str, Any] | None = None,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
     """Map a list of ACL policy NAMES -> ``:Policy`` nodes (metadata only, no rules).
 
@@ -181,9 +210,8 @@ def ingest_policies(
     policy identity is ingested — never the HCL rules, which reference secret paths.
     """
     if not policy_names:
-        raise NativeIngestError("OpenBao policy ingestion requires policy names")
+        raise IngestError("OpenBao policy ingestion requires policy names")
     entities: list[dict[str, Any]] = []
-    server_id, _ = _server_id(server_info)
     for name in policy_names:
         if not name:
             continue
@@ -195,4 +223,4 @@ def ingest_policies(
             "externalToolId": str(name),
         }
         entities.append(node)
-    return ingest_entities(entities, None, client=client, graph=graph)
+    return await ingest_entities(entities, None, ingest=ingest)
