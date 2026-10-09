@@ -1,4 +1,4 @@
-from agent_utilities.core.transport_security import ResolvedTLSProfile
+from agent_connector_sdk.tls.profile import ResolvedTLSProfile
 
 from openbao_mcp.api.api_client_full import Client
 from openbao_mcp.api.api_client_secrets import Api as SecretsApi

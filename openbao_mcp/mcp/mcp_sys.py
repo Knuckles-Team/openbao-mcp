@@ -104,5 +104,5 @@ def register_sys_tools(mcp: FastMCP):
             server_info = None
         data = mounts.get("data") if isinstance(mounts, dict) else None
         listed = len(data) if isinstance(data, dict) else 0
-        result = ingest_mounts(mounts, server_info=server_info)
+        result = await ingest_mounts(mounts, server_info=server_info)
         return {"listed": listed, "ingested": result}
