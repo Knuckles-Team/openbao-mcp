@@ -171,102 +171,18 @@ The following declarative FastMCP tools are registered and available to upstream
 
 <!-- MCP-TOOLS-TABLE:START -->
 
-#### Condensed action-routed tools (default — `MCP_TOOL_MODE=condensed`)
+#### Intent tools
 
-| MCP Tool | Toggle Env Var | Description |
-|----------|----------------|-------------|
-| `openbao_mcp_auth` | `AUTHTOOL` | Manage OpenBao auth operations. |
-| `openbao_mcp_kv` | `SECRETSTOOL` | Manage OpenBao Key-Value v1 and v2 engines. |
-| `openbao_mcp_logical` | `SECRETSTOOL` | Manage OpenBao logical operations. |
-| `openbao_mcp_ssh` | `SSHTOOL` | Manage OpenBao SSH and SSH Helper operations. |
-| `openbao_mcp_sys` | `SYSTOOL` | Manage OpenBao sys operations. |
+| MCP Tool | Kind | Description |
+|----------|------|-------------|
+| `openbao_ingest_mounts` | intent | Natively ingest OpenBao secrets-engine METADATA into epistemic-graph. |
+| `openbao_mcp_auth` | intent | Manage OpenBao auth operations. |
+| `openbao_mcp_kv` | intent | Manage OpenBao Key-Value v1 and v2 engines. |
+| `openbao_mcp_logical` | intent | Manage OpenBao logical operations. |
+| `openbao_mcp_ssh` | intent | Manage OpenBao SSH and SSH Helper operations. |
+| `openbao_mcp_sys` | intent | Manage OpenBao sys operations. |
 
-#### Verbose 1:1 API-mapped tools (`MCP_TOOL_MODE=verbose` or `both`)
-
-<details>
-<summary>75 per-operation tools — one per public API method (click to expand)</summary>
-
-| MCP Tool | Toggle Env Var | Description |
-|----------|----------------|-------------|
-| `openbao_AddHeader` | `CLIENTTOOL` | Invoke the AddHeader operation. |
-| `openbao_Address` | `CLIENTTOOL` | Invoke the Address operation. |
-| `openbao_Auth` | `CLIENTTOOL` | Invoke the Auth operation. |
-| `openbao_CheckRetry` | `CLIENTTOOL` | Invoke the CheckRetry operation. |
-| `openbao_ClearNamespace` | `CLIENTTOOL` | Invoke the ClearNamespace operation. |
-| `openbao_ClearToken` | `CLIENTTOOL` | Invoke the ClearToken operation. |
-| `openbao_ClientTimeout` | `CLIENTTOOL` | Invoke the ClientTimeout operation. |
-| `openbao_Clone` | `CLIENTTOOL` | Invoke the Clone operation. |
-| `openbao_CloneConfig` | `CLIENTTOOL` | Invoke the CloneConfig operation. |
-| `openbao_CloneHeaders` | `CLIENTTOOL` | Invoke the CloneHeaders operation. |
-| `openbao_CloneToken` | `CLIENTTOOL` | Invoke the CloneToken operation. |
-| `openbao_CloneWithHeaders` | `CLIENTTOOL` | Invoke the CloneWithHeaders operation. |
-| `openbao_CurrentWrappingLookupFunc` | `CLIENTTOOL` | Invoke the CurrentWrappingLookupFunc operation. |
-| `openbao_DisableKeepAlives` | `CLIENTTOOL` | Invoke the DisableKeepAlives operation. |
-| `openbao_Headers` | `CLIENTTOOL` | Invoke the Headers operation. |
-| `openbao_Help` | `CLIENTTOOL` | Invoke the Help operation. |
-| `openbao_HelpWithContext` | `CLIENTTOOL` | Invoke the HelpWithContext operation. |
-| `openbao_KVv1` | `CLIENTTOOL` | Invoke the KVv1 operation. |
-| `openbao_KVv2` | `CLIENTTOOL` | Invoke the KVv2 operation. |
-| `openbao_Limiter` | `CLIENTTOOL` | Invoke the Limiter operation. |
-| `openbao_Logical` | `CLIENTTOOL` | Invoke the Logical operation. |
-| `openbao_MaxIdleConnections` | `CLIENTTOOL` | Invoke the MaxIdleConnections operation. |
-| `openbao_MaxRetries` | `CLIENTTOOL` | Invoke the MaxRetries operation. |
-| `openbao_MaxRetryWait` | `CLIENTTOOL` | Invoke the MaxRetryWait operation. |
-| `openbao_MinRetryWait` | `CLIENTTOOL` | Invoke the MinRetryWait operation. |
-| `openbao_Namespace` | `CLIENTTOOL` | Invoke the Namespace operation. |
-| `openbao_NewClient` | `CLIENTTOOL` | Invoke the NewClient operation. |
-| `openbao_NewLifetimeWatcher` | `CLIENTTOOL` | Invoke the NewLifetimeWatcher operation. |
-| `openbao_NewRenewer` | `CLIENTTOOL` | Invoke the NewRenewer operation. |
-| `openbao_NewRequest` | `CLIENTTOOL` | Invoke the NewRequest operation. |
-| `openbao_OutputCurlString` | `CLIENTTOOL` | Invoke the OutputCurlString operation. |
-| `openbao_OutputPolicy` | `CLIENTTOOL` | Invoke the OutputPolicy operation. |
-| `openbao_RawRequest` | `CLIENTTOOL` | Invoke the RawRequest operation. |
-| `openbao_RawRequestWithContext` | `CLIENTTOOL` | Invoke the RawRequestWithContext operation. |
-| `openbao_SRVLookup` | `CLIENTTOOL` | Invoke the SRVLookup operation. |
-| `openbao_SSH` | `CLIENTTOOL` | Invoke the SSH operation. |
-| `openbao_SSHHelper` | `CLIENTTOOL` | Invoke the SSHHelper operation. |
-| `openbao_SSHHelperWithMountPoint` | `CLIENTTOOL` | Invoke the SSHHelperWithMountPoint operation. |
-| `openbao_SSHWithMountPoint` | `CLIENTTOOL` | Invoke the SSHWithMountPoint operation. |
-| `openbao_SetAddress` | `CLIENTTOOL` | Invoke the SetAddress operation. |
-| `openbao_SetBackoff` | `CLIENTTOOL` | Invoke the SetBackoff operation. |
-| `openbao_SetCheckRedirect` | `CLIENTTOOL` | Invoke the SetCheckRedirect operation. |
-| `openbao_SetCheckRetry` | `CLIENTTOOL` | Invoke the SetCheckRetry operation. |
-| `openbao_SetClientTimeout` | `CLIENTTOOL` | Invoke the SetClientTimeout operation. |
-| `openbao_SetCloneHeaders` | `CLIENTTOOL` | Invoke the SetCloneHeaders operation. |
-| `openbao_SetCloneToken` | `CLIENTTOOL` | Invoke the SetCloneToken operation. |
-| `openbao_SetDisableKeepAlives` | `CLIENTTOOL` | Invoke the SetDisableKeepAlives operation. |
-| `openbao_SetHeaders` | `CLIENTTOOL` | Invoke the SetHeaders operation. |
-| `openbao_SetLimiter` | `CLIENTTOOL` | Invoke the SetLimiter operation. |
-| `openbao_SetLogger` | `CLIENTTOOL` | Invoke the SetLogger operation. |
-| `openbao_SetMFACreds` | `CLIENTTOOL` | Invoke the SetMFACreds operation. |
-| `openbao_SetMaxIdleConnections` | `CLIENTTOOL` | Invoke the SetMaxIdleConnections operation. |
-| `openbao_SetMaxRetries` | `CLIENTTOOL` | Invoke the SetMaxRetries operation. |
-| `openbao_SetMaxRetryWait` | `CLIENTTOOL` | Invoke the SetMaxRetryWait operation. |
-| `openbao_SetMinRetryWait` | `CLIENTTOOL` | Invoke the SetMinRetryWait operation. |
-| `openbao_SetNamespace` | `CLIENTTOOL` | Invoke the SetNamespace operation. |
-| `openbao_SetOutputCurlString` | `CLIENTTOOL` | Invoke the SetOutputCurlString operation. |
-| `openbao_SetOutputPolicy` | `CLIENTTOOL` | Invoke the SetOutputPolicy operation. |
-| `openbao_SetPolicyOverride` | `CLIENTTOOL` | Invoke the SetPolicyOverride operation. |
-| `openbao_SetSRVLookup` | `CLIENTTOOL` | Invoke the SetSRVLookup operation. |
-| `openbao_SetToken` | `CLIENTTOOL` | Invoke the SetToken operation. |
-| `openbao_SetWrappingLookupFunc` | `CLIENTTOOL` | Invoke the SetWrappingLookupFunc operation. |
-| `openbao_Sys` | `CLIENTTOOL` | Invoke the Sys operation. |
-| `openbao_Token` | `CLIENTTOOL` | Invoke the Token operation. |
-| `openbao_WithNamespace` | `CLIENTTOOL` | Invoke the WithNamespace operation. |
-| `openbao_WithRequestCallbacks` | `CLIENTTOOL` | Invoke the WithRequestCallbacks operation. |
-| `openbao_WithResponseCallbacks` | `CLIENTTOOL` | Invoke the WithResponseCallbacks operation. |
-| `openbao_delete_secret` | `APITOOL` | Delete a secret path. |
-| `openbao_enable_mount` | `APITOOL` | Enable a secrets engine mount. |
-| `openbao_get_health` | `APITOOL` | Get OpenBao engine health status. |
-| `openbao_get_internal_openapi_spec` | `APITOOL` | Fetch dynamically compiled OpenAPI schema spec. |
-| `openbao_get_mounts` | `APITOOL` | Get mounted secret engines. |
-| `openbao_list_secrets` | `APITOOL` | List secrets under a path. |
-| `openbao_read_secret` | `APITOOL` | Read a secret key-value path. |
-| `openbao_write_secret` | `APITOOL` | Write a secret key-value path. |
-
-</details>
-
-_5 action-routed tool(s) (default) · 75 verbose 1:1 tool(s). Each is enabled unless its `<DOMAIN>TOOL` toggle is set false; `MCP_TOOL_MODE` selects the surface (`condensed` default · `verbose` 1:1 · `both`). Auto-generated — do not edit._
+_6 intent tool(s) · 0 operation(s). Call an operation as `act(action='<operation>', params={...})` (`ask` for reads); `find(action='describe', params={'action': '<operation>'})` returns its arguments. An operation is enabled unless its `<DOMAIN>TOOL` toggle is set false. Auto-generated — do not edit._
 <!-- MCP-TOOLS-TABLE:END -->
 
 See [docs/overview.md](docs/overview.md) or [docs/concepts.md](docs/concepts.md) for deeper operational examples.
@@ -335,6 +251,125 @@ the detailed transport contract.
   ingress. Keep its URL, outbound identity references, trust profile, and exact
   `MCP_ALLOWED_HOSTS` in `AgentConfig`.
 <!-- END GENERATED: additional-deployment-options -->
+
+## MCP Configuration Examples
+
+<!-- MCP-CONFIG-EXAMPLES:START -->
+
+> **Install the connector-focused `[mcp]` extra.** Examples use `openbao-mcp[mcp]` to add
+> FastMCP / FastAPI through `agent-utilities[mcp]`; the required Agent Utilities core
+> still carries `epistemic-graph[full]`. The `[agent-runtime]` extra additionally
+> enables model orchestration.
+
+#### stdio Transport (local IDEs — Cursor, Claude Desktop, VS Code)
+
+```json
+{
+  "mcpServers": {
+    "openbao-mcp": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "openbao-mcp[mcp]",
+        "openbao-mcp"
+      ],
+      "env": {
+        "AUTHTOOL": "True",
+        "BAO_ADDR": "http://127.0.0.1:8200",
+        "OPENBAO_MCP_BASE_URL": "http://127.0.0.1:8200",
+        "OPENBAO_TOKEN": "bao_root_token",
+        "OPENBAO_URL": "http://127.0.0.1:8200",
+        "SECRETSTOOL": "True",
+        "SSHTOOL": "True",
+        "SYSTOOL": "True",
+        "VAULT_ADDR": "http://127.0.0.1:8200"
+      }
+    }
+  }
+}
+```
+
+Runtime references require an alias-aware launcher such as GraphOS. Other
+launchers must omit those entries and inject the resolved values through their
+own runtime secret boundary.
+
+#### Streamable-HTTP Transport (networked / production)
+
+```json
+{
+  "mcpServers": {
+    "openbao-mcp": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "openbao-mcp[mcp]",
+        "openbao-mcp",
+        "--transport",
+        "streamable-http",
+        "--port",
+        "8000"
+      ],
+      "env": {
+        "TRANSPORT": "streamable-http",
+        "HOST": "127.0.0.1",
+        "PORT": "8000",
+        "AUTHTOOL": "True",
+        "BAO_ADDR": "http://127.0.0.1:8200",
+        "OPENBAO_MCP_BASE_URL": "http://127.0.0.1:8200",
+        "OPENBAO_TOKEN": "bao_root_token",
+        "OPENBAO_URL": "http://127.0.0.1:8200",
+        "SECRETSTOOL": "True",
+        "SSHTOOL": "True",
+        "SYSTOOL": "True",
+        "VAULT_ADDR": "http://127.0.0.1:8200"
+      }
+    }
+  }
+}
+```
+
+Alternatively, connect to a pre-deployed Streamable-HTTP instance by `url`:
+
+```json
+{
+  "mcpServers": {
+    "openbao-mcp": {
+      "url": "http://localhost:8000/openbao-mcp/mcp"
+    }
+  }
+}
+```
+
+Run a reviewed container image as a least-privilege stdio child (no
+listener or published port):
+
+```bash
+docker run -i --rm \
+  --read-only \
+  --cap-drop=ALL \
+  --security-opt=no-new-privileges \
+  --pids-limit=256 \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=64m \
+  -e TRANSPORT=stdio \
+  -e AUTHTOOL=True \
+  -e BAO_ADDR=http://127.0.0.1:8200 \
+  -e OPENBAO_MCP_BASE_URL=http://127.0.0.1:8200 \
+  -e OPENBAO_TOKEN=bao_root_token \
+  -e OPENBAO_URL=http://127.0.0.1:8200 \
+  -e SECRETSTOOL=True \
+  -e SSHTOOL=True \
+  -e SYSTOOL=True \
+  -e VAULT_ADDR=http://127.0.0.1:8200 \
+  registry.example.invalid/openbao-mcp@sha256:<digest> openbao-mcp
+```
+
+For containerized network HTTP, supply an authenticated TLS ingress (or
+direct server TLS), exact `MCP_ALLOWED_HOSTS`, and an exact trusted-proxy
+CIDR policy through the operator-owned deployment profile. The generator
+does not emit an unauthenticated non-loopback listener.
+
+_Auto-generated from the code-read env surface (package vars) — do not edit._
+<!-- MCP-CONFIG-EXAMPLES:END -->
 
 ## Documentation
 
@@ -412,6 +447,9 @@ configured secret provider.
 | `SYSTOOL` | `True` |  |
 | `AUTHTOOL` | `True` |  |
 | `SSHTOOL` | `True` |  |
+| `OPENBAO_TLS_PROFILE` | — |  |
+| `OPENBAO_TLS_PROFILE_REF` | — |  |
+| `OPENBAO_MCP_AGENT_IMAGE` | — | Required for the corresponding deployment: image@sha256:digest. |
 
 #### Inherited agent-utilities variables (apply to every connector)
 
@@ -420,7 +458,6 @@ configured secret provider.
 | `TRANSPORT` | `stdio` | MCP transport: `stdio` \| `streamable-http` \| `sse` |
 | `HOST` | `127.0.0.1` | Loopback bind host (set an authenticated ingress explicitly) |
 | `PORT` | `8000` | Bind port (HTTP transports) |
-| `MCP_TOOL_MODE` | `intent` | Tool surface: `intent` \| `condensed` \| `verbose` \| `both` |
 | `MCP_ENABLED_TOOLS` | — | Comma-separated tool allow-list |
 | `MCP_DISABLED_TOOLS` | — | Comma-separated tool deny-list |
 | `MCP_ENABLED_TAGS` | — | Comma-separated tag allow-list |
@@ -438,11 +475,11 @@ configured secret provider.
 | `DEBUG` | `False` | Verbose logging |
 | `PYTHONUNBUFFERED` | `1` | Unbuffered stdout (recommended in containers) |
 | `MCP_URL` | `http://localhost:8000/mcp` | URL of the MCP server the agent connects to |
-| `PROVIDER` | `openai` | LLM provider for the agent |
-| `MODEL_ID` | `gpt-4o` | Model id for the agent |
+| `PROVIDER` | — | Operator-configured LLM provider for the agent |
+| `MODEL_ID` | — | Operator-configured model id for the agent |
 | `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
-_14 package + 24 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
+_17 package + 23 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
 
 <!-- GOVERNED-CAPABILITY:START -->
