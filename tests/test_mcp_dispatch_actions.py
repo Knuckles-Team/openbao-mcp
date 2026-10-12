@@ -163,9 +163,7 @@ async def test_auth_unknown_action_raises(mcp_instance):
     mock_client = MagicMock()
 
     with pytest.raises(ValueError, match="Unknown auth action: bogus"):
-        await auth_tool(
-            action="bogus", params_json="{}", client=mock_client, ctx=None
-        )
+        await auth_tool(action="bogus", params_json="{}", client=mock_client, ctx=None)
 
 
 # --- logical -------------------------------------------------------------------------
@@ -195,7 +193,10 @@ async def test_logical_delete_passes_path(mcp_instance):
     mock_client.Logical().Delete = MagicMock(return_value={"ok": True})
 
     res = await tool(
-        action="delete", params_json='{"path": "secret/x"}', client=mock_client, ctx=None
+        action="delete",
+        params_json='{"path": "secret/x"}',
+        client=mock_client,
+        ctx=None,
     )
 
     assert res == {"ok": True}
@@ -381,7 +382,9 @@ async def test_sys_get_health_delegates_to_legacy_client_method(mcp_instance):
     mock_client = MagicMock()
     mock_client.get_health = MagicMock(return_value={"initialized": True})
 
-    res = await tool(action="get_health", params_json="{}", client=mock_client, ctx=None)
+    res = await tool(
+        action="get_health", params_json="{}", client=mock_client, ctx=None
+    )
 
     assert res == {"initialized": True}
     mock_client.get_health.assert_called_with()
@@ -393,7 +396,9 @@ async def test_sys_get_mounts_delegates_to_legacy_client_method(mcp_instance):
     mock_client = MagicMock()
     mock_client.get_mounts = MagicMock(return_value={"data": {}})
 
-    res = await tool(action="get_mounts", params_json="{}", client=mock_client, ctx=None)
+    res = await tool(
+        action="get_mounts", params_json="{}", client=mock_client, ctx=None
+    )
 
     assert res == {"data": {}}
     mock_client.get_mounts.assert_called_with()

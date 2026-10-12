@@ -113,7 +113,9 @@ async def test_ingest_mounts_maps_mount_and_server(ingest):
     )
     assert server_record.payload["clusterName"] == "vault-prod"
     assert server_record.payload["sealed"] is False
-    relation_refs = {rel.relation_reference.rsplit("/", 1)[-1] for rel in request.relationships}
+    relation_refs = {
+        rel.relation_reference.rsplit("/", 1)[-1] for rel in request.relationships
+    }
     assert relation_refs == {"mountedOn"}
     assert len(request.relationships) == 2
 
@@ -134,9 +136,13 @@ async def test_ingest_policies_maps_names_only(ingest):
     res = await ingest_policies(["default", "app-ro"], ingest=service)
     assert res == {"nodes": 2, "edges": 0}
     request = transport.requests[0]
-    default_record = next(r for r in request.records if r.record_id == "openbao:policy:default")
+    default_record = next(
+        r for r in request.records if r.record_id == "openbao:policy:default"
+    )
     assert default_record.payload == {"name": "default", "externalToolId": "default"}
-    app_ro_record = next(r for r in request.records if r.record_id == "openbao:policy:app-ro")
+    app_ro_record = next(
+        r for r in request.records if r.record_id == "openbao:policy:app-ro"
+    )
     assert app_ro_record.payload["name"] == "app-ro"
 
 

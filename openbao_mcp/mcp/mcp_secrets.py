@@ -1,6 +1,7 @@
 """MCP tools for secrets and logical operations."""
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from fastmcp import Context, FastMCP
 from fastmcp.dependencies import Depends

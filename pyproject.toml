@@ -78,3 +78,6 @@ agent-utilities = { path = ".uv-workspace-siblings/agent-utilities", editable = 
 
 [tool.pipelines_hooks.ste]
 exempt = ["specs/*", "specs/**/*"]
+
+[tool.pytest.ini_options]
+markers = ["concept(id): associates a test with an existing concept identifier"]
