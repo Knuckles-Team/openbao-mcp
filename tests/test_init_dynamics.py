@@ -10,11 +10,6 @@ def test_init_dynamics():
     assert openbao_mcp._MCP_AVAILABLE is True
 
 
-def test_agent_available_flag_reflects_agent_server_importability():
-    """__getattr__("_AGENT_AVAILABLE") mirrors whether openbao_mcp.agent_server imports."""
-    import openbao_mcp
-
-    assert openbao_mcp._AGENT_AVAILABLE is True
 
 
 def test_getattr_resolves_name_from_optional_module():

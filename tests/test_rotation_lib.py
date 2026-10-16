@@ -116,7 +116,7 @@ def test_discover_not_found_returns_empty():
 def test_discover_dataFrom_extract_requires_key_present_in_target_secret():
     es = [
         _external_secret(
-            "mcp-engine-auth", "apps", data_from_extract="agent-utilities/deployment"
+            "mcp-engine-auth", "apps", data_from_extract="agent-connector-sdk/deployment"
         )
     ]
     workloads = [
@@ -130,7 +130,7 @@ def test_discover_dataFrom_extract_requires_key_present_in_target_secret():
         "GRAPH_SERVICE_AUTH_SECRET", es, secret_keys_present, workloads
     )
     assert found.found()
-    assert found.distinct_source_paths == ["agent-utilities/deployment"]
+    assert found.distinct_source_paths == ["agent-connector-sdk/deployment"]
     assert len(found.all_consumers) == 3
     assert found.is_shared  # multiple consumers
 
@@ -153,10 +153,10 @@ def test_discover_multi_path_shared_secret():
         _external_secret(
             "mock-epistemic-graph-secrets",
             "platform",
-            data_from_extract="agent-utilities/deployment",
+            data_from_extract="agent-connector-sdk/deployment",
         ),
         _external_secret(
-            "mcp-engine-auth", "apps", data_from_extract="agent-utilities/deployment"
+            "mcp-engine-auth", "apps", data_from_extract="agent-connector-sdk/deployment"
         ),
         _external_secret(
             "mock-graph-os-secrets", "platform", data_from_extract="graph-os"
@@ -189,7 +189,7 @@ def test_discover_multi_path_shared_secret():
     )
 
     assert result.found()
-    assert result.distinct_source_paths == ["agent-utilities/deployment", "graph-os"]
+    assert result.distinct_source_paths == ["agent-connector-sdk/deployment", "graph-os"]
     assert (
         len(result.all_consumers) == 1 + 2 + 36
     )  # engine + graph-os + graph-os-host + fleet
@@ -321,10 +321,10 @@ def test_plan_shared_secret_has_batch_restart_and_multi_path_warning():
         _external_secret(
             "mock-epistemic-graph-secrets",
             "platform",
-            data_from_extract="agent-utilities/deployment",
+            data_from_extract="agent-connector-sdk/deployment",
         ),
         _external_secret(
-            "mcp-engine-auth", "apps", data_from_extract="agent-utilities/deployment"
+            "mcp-engine-auth", "apps", data_from_extract="agent-connector-sdk/deployment"
         ),
         _external_secret(
             "mock-graph-os-secrets", "platform", data_from_extract="graph-os"

@@ -9,7 +9,6 @@ __all__: list[str] = []
 
 CORE_MODULES = ["openbao_mcp.api_client"]
 OPTIONAL_MODULES = {
-    "openbao_mcp.agent_server": "agent",
     "openbao_mcp.mcp_server": "mcp",
 }
 
