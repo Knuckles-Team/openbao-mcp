@@ -63,8 +63,6 @@ def _resolve_from_optional_modules(name: str) -> Any:
 def __getattr__(name: str) -> Any:
     if name == "_MCP_AVAILABLE":
         return _optional_module_importable("mcp_server")
-    if name == "_AGENT_AVAILABLE":
-        return _optional_module_importable("agent_server")
     return _resolve_from_optional_modules(name)
 
 
