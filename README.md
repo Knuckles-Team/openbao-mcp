@@ -65,7 +65,6 @@ When query strings or parameters are provided, an LLM-free **Knowledge Graph res
 
 > **Install the connector-focused `[mcp]` extra.** Examples use `openbao-mcp[mcp]` to add
 > FastMCP / FastAPI through `agent-connector-sdk`; the required Agent Connector SDK core
-> still carries `epistemic-graph[full]`. The `[agent]` extra also
 > enables model orchestration.
 
 Pick the extra that matches what the operator want to run:
@@ -73,7 +72,6 @@ Pick the extra that matches what the operator want to run:
 | Extra | Installs | Use when |
 |-------|----------|----------|
 | `openbao-mcp[mcp]` | Connector-focused MCP server (`agent-connector-sdk` — FastMCP/FastAPI + `epistemic-graph[full]`) | The operator only run the **MCP server** (smallest install / image) |
-| `openbao-mcp[agent]` | Agent runtime (`agent-connector-sdk` — model orchestration + `epistemic-graph[full]`) | The operator run the **integrated A2A agent** |
 | `openbao-mcp[all]` | Everything (`mcp` + `agent` + `logfire`) | Development / both surfaces |
 
 ```bash
@@ -81,24 +79,21 @@ Pick the extra that matches what the operator want to run:
 uv pip install "openbao-mcp[mcp]"
 
 # Agent runtime (adds model orchestration to the shared graph engine)
-uv pip install "openbao-mcp[agent]"
 
 # Everything (development)
 uv pip install "openbao-mcp[all]"      # or: python -m pip install "openbao-mcp[all]"
 ```
 
-### Container images (`:mcp` vs `:agent`)
+### Container images (`:mcp`)
 
-One multi-stage `docker/Dockerfile` builds two right-sized images, selected by `--target`:
+One multi-stage `docker/Dockerfile` builds the MCP-only image (`--target mcp`):
 
 | Image tag | Build target | Contents | Entrypoint |
 |-----------|--------------|----------|------------|
 | `example/openbao-mcp:mcp` | `--target mcp` | `openbao-mcp[mcp]` — **connector-focused**, includes `epistemic-graph[full]`; no model-orchestration stack | `openbao-mcp` |
-| `example/openbao-mcp@sha256:<digest>` | `--target agent` (default) | `openbao-mcp[agent]` — **agent runtime**, model orchestration + `epistemic-graph[full]` | `openbao-agent` |
 
 ```bash
 docker build --target mcp   -t example/openbao-mcp:mcp    docker/   # connector-focused MCP server
-docker build --target agent -t example/openbao-mcp:agent-local docker/   # agent runtime
 ```
 
 `docker/mcp.compose.yml` runs the connector-focused `:mcp` server; `docker/compose.yml` runs the
@@ -106,9 +101,7 @@ agent (`immutable agent digest`).
 
 ### Knowledge-graph database (`epistemic-graph`)
 
-Both `[mcp]` and `[agent]` carry the **epistemic-graph** engine through the required
 Agent Connector SDK core dependency (`epistemic-graph[full]`). The `[mcp]` extra keeps
-the server connector-focused; `[agent]` also enables model orchestration. Local
 deployments can use the bundled engine. For production or shared state, run
 **epistemic-graph as a dedicated database service** and configure the runtime to use it.
 Deployment recipes (single-node + Raft HA), connection configuration, and architecture
@@ -232,7 +225,6 @@ docker pull example/openbao-mcp@sha256:<digest>   # agent runtime (default)
 
 > The `:mcp` tag is the **MCP-serving image** (`docker/Dockerfile --target mcp`,
 > installing `openbao-mcp[mcp]`); the default the immutable agent image is the **full agent image**
-> (`--target agent`, `openbao-mcp[agent]`) which also bundles the Pydantic AI agent and
 > the epistemic-graph engine. See [Container images](#container-images-mcp-vs-agent).
 
 ---

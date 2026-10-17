@@ -181,7 +181,6 @@ the equivalent environment variables. A Compose service mirrors the MCP one — 
 ```yaml
 # docker/agent.compose.yml
 services:
-  openbao-agent:
     image: example/openbao-mcp@sha256:<digest>
     container_name: openbao-agent
     hostname: openbao-agent
