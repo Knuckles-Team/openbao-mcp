@@ -243,8 +243,8 @@ CREDENTIAL_TYPES: dict[str, CredentialType] = {
     "GRAPH_SERVICE_AUTH_SECRET": CredentialType(
         kind="generated",
         description=(
-            "HMAC signing secret shared by the epistemic-graph engine, graph-os / "
-            "graph-os-host, and every *-mcp fleet pod. Any random high-entropy string "
+            "HMAC signing secret shared by the epistemic-graph engine, arbora / "
+            "arbora-host, and every *-mcp fleet pod. Any random high-entropy string "
             "works cryptographically, but EVERY holder/consumer must cut over together "
             "or engine auth breaks mid-flight."
         ),
