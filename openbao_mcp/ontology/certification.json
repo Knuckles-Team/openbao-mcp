@@ -1,9 +1,9 @@
 {
   "api_version": "arbora.io/v1",
   "artifacts": {
-    "connector_manifest.yml": "b889beaf17369a20197fc7e90051ec5f3676196bdbe0d4e87df8a731dc361af1",
-    "openbao_mcp/connectors/mcp_source_presets.json": "be6d6c81630098d87cdfd7738a3955245828035d86a615a0c7cc368139f2bde5",
-    "openbao_mcp/connectors/tool_schema_fingerprints.json": "f63a5f3f9f5b480a7fcdfacbd8f3e32f9d59efbdd74a8c2250eea02031838b1b",
+    "connector_manifest.yml": "2f382dc99f8b7524db9589583d3153a537bc26e2df2541967da34417932a9a10",
+    "openbao_mcp/connectors/mcp_source_presets.json": "3c6761ae35f790c74b725249f010395c97e58dd659e71692f3ef02bdd55ac2ca",
+    "openbao_mcp/connectors/tool_schema_fingerprints.json": "44c5123bb3d2e1d97c46316b7bf11579dfd0537ebe72287ea877550f8b3d1d18",
     "openbao_mcp/ontology/fixtures/records.json": "fddf20c61bce585f2ef2c740992e4a083fdde3a9a14c91e2335bc9134407e901",
     "openbao_mcp/ontology/mappings/source.yaml": "3a3c14b87e927303ec792160da3b7577f057616f21c4d7556c4ca8a29784e798",
     "openbao_mcp/ontology/migrations/manifest.json": "640a70605d41ea46bbf71fc0eff0e6f71b1387268a5b134a67c40210b52bb09e",

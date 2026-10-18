@@ -6,4 +6,4 @@ def test_startup():
     # Basic import test
     import openbao_mcp
 
-    assert openbao_mcp.__version__ == "2.2.1"
+    assert openbao_mcp.__version__ == "2.3.0"
