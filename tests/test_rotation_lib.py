@@ -116,7 +116,7 @@ def test_discover_not_found_returns_empty():
 def test_discover_dataFrom_extract_requires_key_present_in_target_secret():
     es = [
         _external_secret(
-            "mcp-engine-auth", "apps", data_from_extract="agent-utilities/deployment"
+            "mcp-engine-auth", "apps", data_from_extract="agent-connector-sdk/deployment"
         )
     ]
     workloads = [
@@ -130,7 +130,7 @@ def test_discover_dataFrom_extract_requires_key_present_in_target_secret():
         "GRAPH_SERVICE_AUTH_SECRET", es, secret_keys_present, workloads
     )
     assert found.found()
-    assert found.distinct_source_paths == ["agent-utilities/deployment"]
+    assert found.distinct_source_paths == ["agent-connector-sdk/deployment"]
     assert len(found.all_consumers) == 3
     assert found.is_shared  # multiple consumers
 
@@ -153,13 +153,13 @@ def test_discover_multi_path_shared_secret():
         _external_secret(
             "mock-epistemic-graph-secrets",
             "platform",
-            data_from_extract="agent-utilities/deployment",
+            data_from_extract="agent-connector-sdk/deployment",
         ),
         _external_secret(
-            "mcp-engine-auth", "apps", data_from_extract="agent-utilities/deployment"
+            "mcp-engine-auth", "apps", data_from_extract="agent-connector-sdk/deployment"
         ),
         _external_secret(
-            "mock-graph-os-secrets", "platform", data_from_extract="graph-os"
+            "mock-arbora-secrets", "platform", data_from_extract="arbora"
         ),
     ]
     secret_keys = {
@@ -168,7 +168,7 @@ def test_discover_multi_path_shared_secret():
             "STATE_DB_URI",
         },
         ("apps", "mcp-engine-auth"): {"GRAPH_SERVICE_AUTH_SECRET"},
-        ("platform", "mock-graph-os-secrets"): {
+        ("platform", "mock-arbora-secrets"): {
             "GRAPH_SERVICE_AUTH_SECRET",
             "OIDC_CLIENT_ID",
         },
@@ -177,8 +177,8 @@ def test_discover_multi_path_shared_secret():
         _deployment(
             "epistemic-graph", "platform", secret_ref="mock-epistemic-graph-secrets"
         ),
-        _deployment("graph-os", "platform", secret_ref="mock-graph-os-secrets"),
-        _deployment("graph-os-host", "platform", secret_ref="mock-graph-os-secrets"),
+        _deployment("arbora", "platform", secret_ref="mock-arbora-secrets"),
+        _deployment("arbora-host", "platform", secret_ref="mock-arbora-secrets"),
     ] + [
         _deployment(f"svc{i}-mcp", "apps", secret_ref="mcp-engine-auth")
         for i in range(36)
@@ -189,10 +189,10 @@ def test_discover_multi_path_shared_secret():
     )
 
     assert result.found()
-    assert result.distinct_source_paths == ["agent-utilities/deployment", "graph-os"]
+    assert result.distinct_source_paths == ["agent-connector-sdk/deployment", "arbora"]
     assert (
         len(result.all_consumers) == 1 + 2 + 36
-    )  # engine + graph-os + graph-os-host + fleet
+    )  # engine + arbora + arbora-host + fleet
     assert result.is_shared
 
 
@@ -321,25 +321,25 @@ def test_plan_shared_secret_has_batch_restart_and_multi_path_warning():
         _external_secret(
             "mock-epistemic-graph-secrets",
             "platform",
-            data_from_extract="agent-utilities/deployment",
+            data_from_extract="agent-connector-sdk/deployment",
         ),
         _external_secret(
-            "mcp-engine-auth", "apps", data_from_extract="agent-utilities/deployment"
+            "mcp-engine-auth", "apps", data_from_extract="agent-connector-sdk/deployment"
         ),
         _external_secret(
-            "mock-graph-os-secrets", "platform", data_from_extract="graph-os"
+            "mock-arbora-secrets", "platform", data_from_extract="arbora"
         ),
     ]
     secret_keys = {
         ("platform", "mock-epistemic-graph-secrets"): {"GRAPH_SERVICE_AUTH_SECRET"},
         ("apps", "mcp-engine-auth"): {"GRAPH_SERVICE_AUTH_SECRET"},
-        ("platform", "mock-graph-os-secrets"): {"GRAPH_SERVICE_AUTH_SECRET"},
+        ("platform", "mock-arbora-secrets"): {"GRAPH_SERVICE_AUTH_SECRET"},
     }
     workloads = [
         _deployment(
             "epistemic-graph", "platform", secret_ref="mock-epistemic-graph-secrets"
         ),
-        _deployment("graph-os", "platform", secret_ref="mock-graph-os-secrets"),
+        _deployment("arbora", "platform", secret_ref="mock-arbora-secrets"),
     ] + [
         _deployment(f"svc{i}-mcp", "apps", secret_ref="mcp-engine-auth")
         for i in range(5)

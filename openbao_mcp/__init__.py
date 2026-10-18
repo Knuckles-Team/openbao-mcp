@@ -4,12 +4,11 @@ import importlib
 import inspect
 from typing import Any
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 __all__: list[str] = []
 
 CORE_MODULES = ["openbao_mcp.api_client"]
 OPTIONAL_MODULES = {
-    "openbao_mcp.agent_server": "agent",
     "openbao_mcp.mcp_server": "mcp",
 }
 
@@ -64,8 +63,6 @@ def _resolve_from_optional_modules(name: str) -> Any:
 def __getattr__(name: str) -> Any:
     if name == "_MCP_AVAILABLE":
         return _optional_module_importable("mcp_server")
-    if name == "_AGENT_AVAILABLE":
-        return _optional_module_importable("agent_server")
     return _resolve_from_optional_modules(name)
 
 

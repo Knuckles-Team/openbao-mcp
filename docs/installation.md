@@ -21,8 +21,7 @@ The base install is intentionally minimal. Install the extra for what the operat
 
 | Extra | Install | Pulls in |
 |---|---|---|
-| `mcp` | `pip install "openbao-mcp[mcp]"` | FastMCP MCP-server runtime (`agent-utilities[mcp]`) |
-| `agent` | `pip install "openbao-mcp[agent]"` | Pydantic-AI agent server + Logfire tracing |
+| `mcp` | `pip install "openbao-mcp[mcp]"` | FastMCP MCP-server runtime (`agent-connector-sdk`) |
 | `all` | `pip install "openbao-mcp[all]"` | Everything above |
 | `test` | `pip install "openbao-mcp[test]"` | `pytest`, `pytest-asyncio`, `pytest-cov`, `pytest-xdist` |
 

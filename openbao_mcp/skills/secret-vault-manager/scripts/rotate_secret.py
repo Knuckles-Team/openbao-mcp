@@ -67,9 +67,9 @@ def _kubectl_json(*args: str) -> dict:
     return json.loads(result.stdout)
 
 
-def collect_live_snapshot() -> (
-    tuple[list[dict], dict[tuple[str, str], set[str]], list[dict]]
-):
+def collect_live_snapshot() -> tuple[
+    list[dict], dict[tuple[str, str], set[str]], list[dict]
+]:
     """Fetch ExternalSecrets, Secret KEY NAMES (never values), and workloads cluster-wide.
 
     Returns the exact three inputs ``rotation_lib.discover_credential`` needs.

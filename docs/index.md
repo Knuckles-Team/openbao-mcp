@@ -1,6 +1,6 @@
 # openbao-mcp
 
-OpenBao secrets-engine **API + MCP Server** for the agent-utilities ecosystem —
+OpenBao secrets-engine **API + MCP Server** for the agent-connector-sdk ecosystem —
 a typed, deterministic tool surface over the OpenBao (Vault-compatible) secrets,
 system, authentication, and SSH APIs.
 

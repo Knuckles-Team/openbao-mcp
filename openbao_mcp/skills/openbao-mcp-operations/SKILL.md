@@ -2,12 +2,12 @@
 name: openbao-mcp-operations
 skill_type: skill
 description: >-
-  Operate openbao-mcp through its governed MCP and GraphOS capabilities, including secret vault manager. Use when a request requires this provider's read, change, automation, ingestion, troubleshooting, or evidence workflows.
+  Operate openbao-mcp through its governed MCP and Arbora capabilities, including secret vault manager. Use when a request requires this provider's read, change, automation, ingestion, troubleshooting, or evidence workflows.
 ---
 
 # Openbao Mcp Operations
 
-Use the provider's governed MCP tools through GraphOS delegation.
+Use the provider's governed MCP tools through Arbora delegation.
 
 ## Workflow
 

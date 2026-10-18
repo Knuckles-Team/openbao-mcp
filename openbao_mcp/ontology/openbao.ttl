@@ -106,6 +106,6 @@
     rdfs:label "OpenBao Secrets Platform Ontology" ;
     rdfs:comment """OpenBao/Vault control-plane metadata model — servers/clusters, mounted
     secrets and auth engines, and ACL policies, with their mount and governance
-    relationships — federated into the agent-utilities knowledge-graph hub. METADATA ONLY:
+    relationships — federated into the agent-connector-sdk knowledge-graph hub. METADATA ONLY:
     secret values are never modelled or ingested.""" ;
     owl:imports <http://knuckles.team/kg> .
