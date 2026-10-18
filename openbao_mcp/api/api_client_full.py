@@ -1182,7 +1182,7 @@ class Client(ApiClientBase):
         self._headers: dict[str, Any] = {}
 
     @classmethod
-    def NewClient(cls, c: Config) -> "Client":
+    def NewClient(cls, c: Any) -> "Client":
         return cls(c)
 
     def Address(self) -> str:
