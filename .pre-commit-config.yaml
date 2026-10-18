@@ -26,6 +26,6 @@ repos:
         pass_filenames: false
         files: ^(README\.md|\.env\.example|mcp_config.*\.json|.*/mcp_config.*\.json|docker/.*compose.*\.ya?ml|.*/auth\.py|.*/mcp_server\.py)$
   - repo: https://github.com/Knuckles-Team/pipelines
-    rev: ed8ea8ac5989cbc883c149843b311aeecb44e6a2
+    rev: main
     hooks:
     - id: dependency-readiness
