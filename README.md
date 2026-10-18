@@ -1,7 +1,7 @@
 # Openbao MCP
 
 [![Status](https://img.shields.io/badge/status-active-success)](https://github.com/genius-agents/openbao-mcp)
-[![Version](https://img.shields.io/badge/version-2.2.0-blue)](pyproject.toml)
+[![Version](https://img.shields.io/badge/version-2.2.1-blue)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 OpenBao Secrets and Encryption Key Vault orchestrator. Built with the highest architectural standards, incorporating dynamic facades, custom API routing, and FastMCP tool decoration.
@@ -118,10 +118,12 @@ The operator can start the FastMCP server in stdio mode via Python module execut
 import asyncio
 from openbao_mcp.mcp_server import get_mcp_instance
 
+
 async def main():
     mcp = get_mcp_instance()
     # Execute stdio loop or launch server
     print("MCP Server ready.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
