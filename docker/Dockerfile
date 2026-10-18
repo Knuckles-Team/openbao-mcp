@@ -13,7 +13,7 @@ RUN apt-get update \
 # Slim MCP-only dependency closure.
 FROM builder-base AS builder-mcp
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system --break-system-packages openbao-mcp[mcp]==0.32.0
+    uv pip install --system --break-system-packages openbao-mcp[mcp]==2.2.0
 
 FROM python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3 AS runtime-base
 ARG HOST=127.0.0.1
