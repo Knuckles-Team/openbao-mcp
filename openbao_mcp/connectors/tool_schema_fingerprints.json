@@ -1,8 +1,0 @@
-{
-  "algorithm": "agent-connector-sdk:mcp-tool-contract-compat:v2",
-  "connector": "openbao-mcp",
-  "schema_version": "1",
-  "tools": {
-    "openbao_get_mounts": "5745503b0132aa4ec5db53d35813a2caeeb86998cae9ddbf785fef374c8070fe"
-  }
-}

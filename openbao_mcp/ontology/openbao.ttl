@@ -28,9 +28,8 @@
     rdfs:label "Auth Mount" ;
     rdfs:comment "A mounted authentication method at a path (e.g. userpass, approle, token, oidc) — its path/type/accessor metadata." .
 
-:Policy a owl:Class ;
-    rdfs:label "Policy" ;
-    rdfs:comment "A named ACL policy governing path-level capabilities. METADATA only — policy name/identity, never the credentials it grants access to (sys/policies/acl)." .
+:Policy a owl:Class .
+
 
 # --- links (owl:ObjectProperty) ---
 
@@ -107,5 +106,4 @@
     rdfs:comment """OpenBao/Vault control-plane metadata model — servers/clusters, mounted
     secrets and auth engines, and ACL policies, with their mount and governance
     relationships — federated into the agent-connector-sdk knowledge-graph hub. METADATA ONLY:
-    secret values are never modelled or ingested.""" ;
-    owl:imports <http://knuckles.team/kg> .
+    secret values are never modelled or ingested.""" .

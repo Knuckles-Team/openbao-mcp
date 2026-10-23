@@ -70,7 +70,7 @@ async def test_ingest_entities_writes_nodes_and_edges(ingest):
     a_record = next(r for r in request.records if r.record_id == "a")
     assert a_record.payload["mountPath"] == "secret/"
     assert request.relationships[0].relation_reference.endswith(
-        "resources/SecretMount/relations/mountedOn"
+        "relations/SecretMount/mountedOn"
     )
 
 
