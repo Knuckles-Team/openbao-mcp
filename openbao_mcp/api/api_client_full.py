@@ -4,8 +4,7 @@ import os
 import re
 from typing import Any
 
-import requests
-import requests.structures
+import httpx
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
 
 from openbao_mcp.api.api_client_base import ApiClientBase
@@ -1224,7 +1223,7 @@ class Client(ApiClientBase):
         self._session.headers.update({key: value})
 
     def Headers(self) -> Any:
-        h = requests.structures.CaseInsensitiveDict()
+        h = httpx.Headers()
         for k, v in self._headers.items():
             h[k] = v
         return h
