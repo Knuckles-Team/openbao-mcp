@@ -4,8 +4,6 @@ from openbao_mcp.api.api_client_full import Client
 from openbao_mcp.api.api_client_secrets import Api as SecretsApi
 from openbao_mcp.api.api_client_sys import Api as SysApi
 
-__version__ = "2.3.3"
-
 
 class Api(SecretsApi, SysApi, Client):
     def __init__(

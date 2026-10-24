@@ -4,7 +4,6 @@ import importlib
 import inspect
 from typing import Any
 
-__version__ = "2.3.3"
 __all__: list[str] = []
 
 CORE_MODULES = ["openbao_mcp.api_client"]
@@ -68,3 +67,20 @@ def __getattr__(name: str) -> Any:
 
 def __dir__() -> list[str]:
     return sorted(list(globals().keys()) + __all__)
+
+
+from agent_connector_sdk.connector import Connector
+
+from openbao_mcp.api_client import Api
+from openbao_mcp.auth import get_client
+
+connector = Connector(
+    api=Api,
+    get_client=get_client,
+    tools="openbao_mcp.mcp_server",
+    instructions="OpenBao MCP MCP Server - Managed dynamic operations.",
+    transports=(
+        "stdio",
+        "streamable-http",
+    ),
+)

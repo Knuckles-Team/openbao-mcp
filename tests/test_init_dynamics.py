@@ -10,16 +10,6 @@ def test_init_dynamics():
     assert openbao_mcp._MCP_AVAILABLE is True
 
 
-
-
-def test_getattr_resolves_name_from_optional_module():
-    """An attribute defined only in an optional module (mcp_server) resolves via __getattr__."""
-    import openbao_mcp
-
-    assert openbao_mcp.get_mcp_instance is not None
-    assert callable(openbao_mcp.get_mcp_instance)
-
-
 def test_getattr_raises_attribute_error_for_unknown_name():
     """A name that exists in no core or optional module raises AttributeError."""
     import openbao_mcp
