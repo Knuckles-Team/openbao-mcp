@@ -1,31 +1,33 @@
-# Without this, `pre-commit install` wires ONLY the pre-commit hook, so `git push`
-# runs nothing and every hook staged pre-push is silently dead code.
+# The whole pre-commit configuration of a connector (PIPE-VALIDATION-R001.9). Everything a
+# connector used to copy lives in pipelines at `rev: main`: the sanitizer, the standard-file
+# check, the codespell defaults and the gate set. A change to a shared check reaches every
+# connector with no edit here. Per-repo options go in pyproject.toml tables only.
 default_install_hook_types: [pre-commit, pre-push]
-# Phase 0 dev-velocity contract (arbora-completion-program): a hook with no
-# explicit `stages:` below is commit-only, never both.
 default_stages: [pre-commit]
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 38bfb07c0c64c304f47eb52090f8288150c77730  # frozen: v0.17.1
-    hooks:
-      - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
-      - id: ruff-format
-  - repo: local
-    hooks:
-      - id: security-sanitizer
-        name: Security and Garbage Sanitizer
-        entry: python scripts/security_sanitizer.py
-        language: python
-        pass_filenames: false
-        always_run: true
-      - id: env-var-drift
-        name: check env-var/config drift
-        entry: bash -c 'if [ -f uv.lock ]; then uv run python -m agent_connector_sdk.mcp.env_drift --check; else python -m agent_connector_sdk.mcp.env_drift --check; fi'
-        language: system
-        pass_filenames: false
-        files: ^(README\.md|\.env\.example|mcp_config.*\.json|.*/mcp_config.*\.json|docker/.*compose.*\.ya?ml|.*/auth\.py|.*/mcp_server\.py)$
-  - repo: https://github.com/Knuckles-Team/pipelines
-    rev: main
-    hooks:
-    - id: dependency-readiness
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-merge-conflict
+  - id: check-yaml
+    args: [--unsafe]
+  - id: check-toml
+  - id: check-json
+  - id: detect-private-key
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # v0.16.0
+  hooks:
+  - id: ruff-check
+  - id: ruff-format
+- repo: https://github.com/Knuckles-Team/pipelines
+  rev: main
+  hooks:
+  - id: connector-standard
+  - id: secrets
+  - id: spec
+    stages: [pre-push]
+  - id: tests-fast
+    stages: [pre-push]
+  - id: dependency-readiness

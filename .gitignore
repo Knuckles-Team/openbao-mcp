@@ -30,3 +30,8 @@ trace.txt
 # standalone against its own tracked lock instead of the ecosystem workspace.
 # Never tracked.
 .uv-workspace-siblings/
+docker/Dockerfile
+docker/debug.Dockerfile
+docker/*.compose.yml
+openbao_mcp/ontology/shapes/connector.shacl.ttl
+openbao_mcp/ontology/certification.json
