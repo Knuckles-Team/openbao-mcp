@@ -2,7 +2,7 @@
   "schema_version": 2,
   "spec_id": "CONN-OPENBAO-MCP-CONNECTOR-CONTENT",
   "owner_repo": "openbao-mcp",
-  "delivery_state": "VERIFIED",
+  "delivery_state": "LANDED",
   "requirement_ids": [
     "CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R001"
   ],
@@ -10,13 +10,11 @@
     {
       "id": "CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R001",
       "title": "Default content",
-      "delivery_state": "VERIFIED",
+      "delivery_state": "LANDED",
       "landed_in": [
         "f95db6f5f4ff"
       ],
-      "verified_by": [
-        "tests/test_default_content_surfaces.py:15"
-      ]
+      "verified_by": []
     }
   ]
 }
