@@ -116,7 +116,9 @@ def test_discover_not_found_returns_empty():
 def test_discover_dataFrom_extract_requires_key_present_in_target_secret():
     es = [
         _external_secret(
-            "mcp-engine-auth", "apps", data_from_extract="agent-connector-sdk/deployment"
+            "mcp-engine-auth",
+            "apps",
+            data_from_extract="agent-connector-sdk/deployment",
         )
     ]
     workloads = [
@@ -156,11 +158,11 @@ def test_discover_multi_path_shared_secret():
             data_from_extract="agent-connector-sdk/deployment",
         ),
         _external_secret(
-            "mcp-engine-auth", "apps", data_from_extract="agent-connector-sdk/deployment"
+            "mcp-engine-auth",
+            "apps",
+            data_from_extract="agent-connector-sdk/deployment",
         ),
-        _external_secret(
-            "mock-arbora-secrets", "platform", data_from_extract="arbora"
-        ),
+        _external_secret("mock-arbora-secrets", "platform", data_from_extract="arbora"),
     ]
     secret_keys = {
         ("platform", "mock-epistemic-graph-secrets"): {
@@ -324,11 +326,11 @@ def test_plan_shared_secret_has_batch_restart_and_multi_path_warning():
             data_from_extract="agent-connector-sdk/deployment",
         ),
         _external_secret(
-            "mcp-engine-auth", "apps", data_from_extract="agent-connector-sdk/deployment"
+            "mcp-engine-auth",
+            "apps",
+            data_from_extract="agent-connector-sdk/deployment",
         ),
-        _external_secret(
-            "mock-arbora-secrets", "platform", data_from_extract="arbora"
-        ),
+        _external_secret("mock-arbora-secrets", "platform", data_from_extract="arbora"),
     ]
     secret_keys = {
         ("platform", "mock-epistemic-graph-secrets"): {"GRAPH_SERVICE_AUTH_SECRET"},

@@ -11,4 +11,3 @@
 | `CONCEPT:BO-OS.governance.bao-2` | FastMCP Tools Execution | Exposes FastMCP tool interface capabilities |
 | `CONCEPT:BO-OS.identity.bao` | Identity & Gateway Security | Exposes authentication, authorization, and secure transport operations |
 | `CONCEPT:BO-OS.governance.bao-3` | Agent Server Orchestration | Start graph-based Pydantic AI agent server |
-
