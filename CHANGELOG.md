@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added the source-backed OpenBao connector development skill and focused
+  publication contract checks for the standard spec-delivery workflow.
+
 ## [0.15.0] - 2026-05-25
 
 ### Added
