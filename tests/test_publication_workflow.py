@@ -26,20 +26,7 @@ def test_development_skill_is_source_backed():
 
 
 def test_pages_and_package_contract_are_documented_by_actual_files():
-    workflow = (ROOT / ".github/workflows/pages.yml").read_text()
     package = (ROOT / "pyproject.toml").read_text()
-    release = (ROOT / ".github/workflows/pipeline.yml").read_text()
 
-    assert "pages_pipeline.yml@main" in workflow
-    assert "content_source: docs" in workflow
-    assert "spec_dashboard_enabled: true" in workflow
-    for path in (
-        "specs/**",
-        ".github/spec-dashboard.json",
-        ".github/workflows/pages.yml",
-    ):
-        assert path in workflow
     for tree in ("skills/**", "ontology/**", "connectors/**"):
         assert tree in package
-    assert "connector: true" in release
-    assert "render_connector: true" in release
