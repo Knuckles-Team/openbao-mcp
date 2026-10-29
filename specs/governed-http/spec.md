@@ -8,7 +8,7 @@ The client must keep the connector's TLS profile, token and namespace headers, a
 ## Scope and owner
 
 The `openbao-mcp` repository owns the OpenBao operations and their results.
-The shared connector SDK owns the governed HTTP client, retry and rate-limit handling, and TLS profiles (SDK-CENTRALIZED-CAPABILITIES-R001, SDK-CENTRALIZED-CAPABILITIES-R008).
+The shared connector SDK owns the governed HTTP client, retry and rate-limit handling, and TLS profiles (SCION-CENTRALIZED-CAPABILITIES-R001, SCION-CENTRALIZED-CAPABILITIES-R008).
 The shared pipelines repository owns quality gates and delivery rendering.
 
 Component: OpenBao API client
