@@ -118,7 +118,7 @@ def test_discover_dataFrom_extract_requires_key_present_in_target_secret():
         _external_secret(
             "mcp-engine-auth",
             "apps",
-            data_from_extract="agent-connector-sdk/deployment",
+            data_from_extract="scion-sdk/deployment",
         )
     ]
     workloads = [
@@ -132,7 +132,7 @@ def test_discover_dataFrom_extract_requires_key_present_in_target_secret():
         "GRAPH_SERVICE_AUTH_SECRET", es, secret_keys_present, workloads
     )
     assert found.found()
-    assert found.distinct_source_paths == ["agent-connector-sdk/deployment"]
+    assert found.distinct_source_paths == ["scion-sdk/deployment"]
     assert len(found.all_consumers) == 3
     assert found.is_shared  # multiple consumers
 
@@ -155,12 +155,12 @@ def test_discover_multi_path_shared_secret():
         _external_secret(
             "mock-epistemic-graph-secrets",
             "platform",
-            data_from_extract="agent-connector-sdk/deployment",
+            data_from_extract="scion-sdk/deployment",
         ),
         _external_secret(
             "mcp-engine-auth",
             "apps",
-            data_from_extract="agent-connector-sdk/deployment",
+            data_from_extract="scion-sdk/deployment",
         ),
         _external_secret("mock-arbora-secrets", "platform", data_from_extract="arbora"),
     ]
@@ -191,7 +191,7 @@ def test_discover_multi_path_shared_secret():
     )
 
     assert result.found()
-    assert result.distinct_source_paths == ["agent-connector-sdk/deployment", "arbora"]
+    assert result.distinct_source_paths == ["arbora", "scion-sdk/deployment"]
     assert (
         len(result.all_consumers) == 1 + 2 + 36
     )  # engine + arbora + arbora-host + fleet
@@ -323,12 +323,12 @@ def test_plan_shared_secret_has_batch_restart_and_multi_path_warning():
         _external_secret(
             "mock-epistemic-graph-secrets",
             "platform",
-            data_from_extract="agent-connector-sdk/deployment",
+            data_from_extract="scion-sdk/deployment",
         ),
         _external_secret(
             "mcp-engine-auth",
             "apps",
-            data_from_extract="agent-connector-sdk/deployment",
+            data_from_extract="scion-sdk/deployment",
         ),
         _external_secret("mock-arbora-secrets", "platform", data_from_extract="arbora"),
     ]

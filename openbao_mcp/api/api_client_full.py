@@ -5,7 +5,7 @@ import re
 from typing import Any
 
 import httpx
-from agent_connector_sdk.tls.profile import ResolvedTLSProfile
+from scion_sdk.tls.profile import ResolvedTLSProfile
 
 from openbao_mcp.api.api_client_base import ApiClientBase
 

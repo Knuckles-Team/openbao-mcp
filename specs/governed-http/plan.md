@@ -4,7 +4,7 @@ Governing spec: [spec.md](spec.md).
 
 ## Existing system and reuse
 
-`ApiClientBase` builds one governed client through `agent_connector_sdk.http`. `Client` in `api_client_full.py` mutates its headers for token and namespace changes.
+`ApiClientBase` builds one governed client through `scion_sdk.http`. `Client` in `api_client_full.py` mutates its headers for token and namespace changes.
 
 ## Architecture
 

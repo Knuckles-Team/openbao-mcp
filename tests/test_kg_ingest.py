@@ -1,8 +1,8 @@
 """Native epistemic-graph typed-node ingestion — Wire-First coverage (METADATA ONLY).
 
 Exercises the real ``ingest_entities`` / ``ingest_mounts`` / ``ingest_policies`` seam
-against a fake ``agent_connector_sdk.ingest`` transport (no engine required). The real
-SDK request builder (``agent_connector_sdk.ingest.request.build_request``) still runs,
+against a fake ``scion_sdk.ingest`` transport (no engine required). The real
+SDK request builder (``scion_sdk.ingest.request.build_request``) still runs,
 so a malformed change set is still caught by the SDK's own contract, not re-derived
 here; only the final network commit is faked. Also asserts — critically — that secret
 VALUES are never copied into the graph.
@@ -15,8 +15,8 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-from agent_connector_sdk.ingest import IngestError, KnowledgeIngest
 from epistemic_graph.generated.source_ingestion import SourceIngestionRequest
+from scion_sdk.ingest import IngestError, KnowledgeIngest
 
 from openbao_mcp.kg_ingest import (
     STREAM,

@@ -71,9 +71,9 @@ numbers are safe to surface.
 Discovery in this skill is fully derived from live ExternalSecret specs —
 it does **not** assume a credential lives at exactly one OpenBao path.
 `GRAPH_SERVICE_AUTH_SECRET` used to be independently sourced from **two**
-paths (`apps/agent-connector-sdk/deployment` used by the engine + mcp fleet, and
+paths (`apps/scion-sdk/deployment` used by the engine + mcp fleet, and
 `apps/arbora` used by arbora/arbora-host/alert-bridge) that happened to
-hold the same value. **Reconciled 2026-07-23**: `apps/agent-connector-sdk/deployment`
+hold the same value. **Reconciled 2026-07-23**: `apps/scion-sdk/deployment`
 is now the sole canonical path (deployment-identity home; already read by
 the engine and 65/69 fleet consumers before reconciliation). The two
 ExternalSecrets that used to pull the whole `apps/arbora` path for this key
