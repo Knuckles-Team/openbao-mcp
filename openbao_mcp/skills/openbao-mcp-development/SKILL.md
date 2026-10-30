@@ -41,7 +41,7 @@ external boundaries.
   content. `pyproject.toml` includes these trees through package data; inspect
   a built wheel when changing packaged content.
 - The declared console script is
-  `openbao-mcp = agent_connector_sdk.cli:serve`, and the connector entry point
+  `openbao-mcp = scion_sdk.cli:serve`, and the connector entry point
   is `openbao-mcp = openbao_mcp:connector`. Do not invent another server or
   entry point.
 

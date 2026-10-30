@@ -1,5 +1,5 @@
 site_name: "openbao-mcp"
-site_description: "OpenBao secrets-engine API + MCP Server — typed, deterministic secrets / system / auth / SSH tools for the agent-connector-sdk ecosystem."
+site_description: "OpenBao secrets-engine API + MCP Server — typed, deterministic secrets / system / auth / SSH tools for the scion-sdk ecosystem."
 site_url: "https://knuckles-team.github.io/openbao-mcp/"
 repo_name: "Knuckles-Team/openbao-mcp"
 repo_url: "https://github.com/Knuckles-Team/openbao-mcp"

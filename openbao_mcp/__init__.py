@@ -69,7 +69,7 @@ def __dir__() -> list[str]:
     return sorted(list(globals().keys()) + __all__)
 
 
-from agent_connector_sdk.connector import Connector
+from scion_sdk.connector import Connector
 
 from openbao_mcp.api_client import Api
 from openbao_mcp.auth import get_client

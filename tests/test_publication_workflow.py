@@ -16,7 +16,7 @@ def test_development_skill_is_source_backed():
         "openbao_mcp/mcp/mcp_sys.py",
         "OPENBAO_URL",
         "OPENBAO_TOKEN",
-        "agent_connector_sdk.cli:serve",
+        "scion_sdk.cli:serve",
         "tests/test_governed_http.py",
     ):
         assert fragment in skill

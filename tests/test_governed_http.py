@@ -2,7 +2,7 @@
 
 import httpx
 import pytest
-from agent_connector_sdk.http import client as sdk_http
+from scion_sdk.http import client as sdk_http
 
 from openbao_mcp.api import api_client_base
 from openbao_mcp.api.api_client_full import Client

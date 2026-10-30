@@ -4,7 +4,7 @@ Only whitelisted mount paths, engine types, accessors, policy names, and server 
 are accepted. Secret values, credentials, tokens, and unseal material are never read or
 materialized.
 
-All writes go through ``agent_connector_sdk.ingest`` -- the generated ``SourceIngest``
+All writes go through ``scion_sdk.ingest`` -- the generated ``SourceIngest``
 client, not a local ingestion helper. Nodes use canonical ``node_type`` and edges use
 canonical ``relationship``; nodes and edges commit in one request. Missing engine
 dependencies, rejected records, and transaction failures propagate as ``IngestError``.
@@ -15,7 +15,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from agent_connector_sdk.ingest import (
+from scion_sdk.ingest import (
     IngestError,
     KnowledgeIngest,
     SourceStream,

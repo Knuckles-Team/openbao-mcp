@@ -2,7 +2,7 @@
 
 import logging
 
-from agent_connector_sdk.config import setting
+from scion_sdk.config import setting
 
 from openbao_mcp.api_client import Api
 

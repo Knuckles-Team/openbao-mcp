@@ -12,7 +12,7 @@ The shared connector SDK owns the governed HTTP client, retry and rate-limit han
 The shared pipelines repository owns quality gates and delivery rendering.
 
 Component: OpenBao API client
-References: [Connector SDK](https://github.com/Knuckles-Team/agent-connector-sdk/blob/main/README.md)
+References: [Connector SDK](https://github.com/Knuckles-Team/scion-sdk/blob/main/README.md)
 Code: ../../openbao_mcp/api/api_client_base.py ../../openbao_mcp/api/api_client_full.py ../../tests/test_governed_http.py
 
 ## Non-goals

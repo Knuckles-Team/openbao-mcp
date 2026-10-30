@@ -3,7 +3,7 @@
 The caller's entitled OpenBao secret-engine mounts auto-load in ``get_mounts``,
 covering both the modern ``{"data": {...}}`` envelope and the legacy
 top-level-keyed response. Tests the filtering logic with the entitlement
-source mocked (the resolver itself is tested in agent-connector-sdk).
+source mocked (the resolver itself is tested in scion-sdk).
 """
 
 from openbao_mcp.api import api_client_sys
@@ -69,7 +69,7 @@ def test_missing_resolver_degrades_to_full_list(monkeypatch):
     real_import = builtins.__import__
 
     def _blocked_import(name, *args, **kwargs):
-        if name == "agent_connector_sdk.entitlements":
+        if name == "scion_sdk.entitlements":
             raise ImportError("simulated: resolver not available")
         return real_import(name, *args, **kwargs)
 
