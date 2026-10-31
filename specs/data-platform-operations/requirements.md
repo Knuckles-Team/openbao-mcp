@@ -6,4 +6,4 @@ Each row is one requirement. A row names the file it touches and the test that p
 
 | ID | Requirement | Acceptance |
 |---|---|---|
-| `CONN-OPENBAO-MCP-DATA-PLATFORM-OPERATIONS-R001` | **Metadata-only operation.** Returns KV v2 metadata (path, current version, created and updated time) and a policy-to-path capability matrix, with no values and no HCL. Touches `openbao_mcp/mcp/mcp_secrets.py`. Moved from `EG-DATAPLAT-VOCAB-R009.3` (medulla). | response schema test asserts no value, data or token key at any depth. |
+| `CONN-OPENBAO-MCP-DATA-PLATFORM-OPERATIONS-R001` | **Metadata-only operation.** Returns KV v2 metadata (path, current version, created and updated time) and a policy-to-path capability matrix, with no values and no HCL. Touches `openbao_mcp/mcp/mcp_secrets.py`. Moved from `MEDULLA-DATAPLAT-VOCAB-R009.3` (medulla). | response schema test asserts no value, data or token key at any depth. |
