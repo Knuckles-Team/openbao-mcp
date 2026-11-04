@@ -71,7 +71,7 @@ Pick the extra that matches what the operator want to run:
 
 | Extra | Installs | Use when |
 |-------|----------|----------|
-| `openbao-mcp[mcp]` | Connector-focused MCP server (`scion-sdk` — FastMCP/FastAPI + `epistemic-graph[full]`) | The operator only run the **MCP server** (smallest install / image) |
+| `openbao-mcp[mcp]` | Connector-focused MCP server (`scion-sdk` — FastMCP/FastAPI + `medulla`) | The operator only run the **MCP server** (smallest install / image) |
 | `openbao-mcp[all]` | Everything (`mcp` + `agent` + `logfire`) | Development / both surfaces |
 
 ```bash
@@ -90,7 +90,7 @@ One multi-stage `docker/Dockerfile` builds the MCP-only image (`--target mcp`):
 
 | Image tag | Build target | Contents | Entrypoint |
 |-----------|--------------|----------|------------|
-| `example/openbao-mcp:mcp` | `--target mcp` | `openbao-mcp[mcp]` — **connector-focused**, includes `epistemic-graph[full]`; no model-orchestration stack | `openbao-mcp` |
+| `example/openbao-mcp:mcp` | `--target mcp` | `openbao-mcp[mcp]` — **connector-focused**, includes `medulla`; no model-orchestration stack | `openbao-mcp` |
 
 ```bash
 docker build --target mcp   -t example/openbao-mcp:mcp    docker/   # connector-focused MCP server
@@ -99,14 +99,14 @@ docker build --target mcp   -t example/openbao-mcp:mcp    docker/   # connector-
 `docker/mcp.compose.yml` runs the connector-focused `:mcp` server; `docker/compose.yml` runs the
 agent (`immutable agent digest`).
 
-### Knowledge-graph database (`epistemic-graph`)
+### Knowledge-graph database (`medulla`)
 
-Scion SDK core dependency (`epistemic-graph[full]`). The `[mcp]` extra keeps
+Scion SDK core dependency (`medulla`). The `[mcp]` extra keeps
 deployments can use the bundled engine. For production or shared state, run
-**epistemic-graph as a dedicated database service** and configure the runtime to use it.
+**medulla as a dedicated database service** and configure the runtime to use it.
 Deployment recipes (single-node + Raft HA), connection configuration, and architecture
 diagrams are documented in the
-[epistemic-graph deployment guide](https://knuckles-team.github.io/epistemic-graph/deployment/).
+[medulla deployment guide](https://knuckles-team.github.io/medulla/deployment/).
 
 ---
 
@@ -170,7 +170,7 @@ The following declarative FastMCP tools are registered and available to upstream
 
 | MCP Tool | Kind | Description |
 |----------|------|-------------|
-| `openbao_ingest_mounts` | intent | Natively ingest OpenBao secrets-engine METADATA into epistemic-graph. |
+| `openbao_ingest_mounts` | intent | Natively ingest OpenBao secrets-engine METADATA into medulla. |
 | `openbao_mcp_auth` | intent | Manage OpenBao auth operations. |
 | `openbao_mcp_kv` | intent | Manage OpenBao Key-Value v1 and v2 engines. |
 | `openbao_mcp_logical` | intent | Manage OpenBao logical operations. |
@@ -227,7 +227,7 @@ docker pull example/openbao-mcp@sha256:<digest>   # agent runtime (default)
 
 > The `:mcp` tag is the **MCP-serving image** (`docker/Dockerfile --target mcp`,
 > installing `openbao-mcp[mcp]`); the default the immutable agent image is the **full agent image**
-> the epistemic-graph engine. See [Container images](#container-images-mcp-vs-agent).
+> the medulla engine. See [Container images](#container-images-mcp-vs-agent).
 
 ---
 
@@ -252,7 +252,7 @@ the detailed transport contract.
 
 > **Install the connector-focused `[mcp]` extra.** Examples use `openbao-mcp[mcp]` to add
 > FastMCP / FastAPI through `scion-sdk`; the required Scion SDK core
-> still carries `epistemic-graph[full]`. The `[agent-runtime]` extra additionally
+> still carries `medulla`. The `[agent-runtime]` extra additionally
 > enables model orchestration.
 
 #### stdio Transport (local IDEs — Cursor, Claude Desktop, VS Code)

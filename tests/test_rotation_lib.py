@@ -153,7 +153,7 @@ def test_discover_dataFrom_extract_requires_key_present_in_target_secret():
 def test_discover_multi_path_shared_secret():
     es = [
         _external_secret(
-            "mock-epistemic-graph-secrets",
+            "mock-medulla-secrets",
             "platform",
             data_from_extract="scion-sdk/deployment",
         ),
@@ -165,7 +165,7 @@ def test_discover_multi_path_shared_secret():
         _external_secret("mock-arbora-secrets", "platform", data_from_extract="arbora"),
     ]
     secret_keys = {
-        ("platform", "mock-epistemic-graph-secrets"): {
+        ("platform", "mock-medulla-secrets"): {
             "GRAPH_SERVICE_AUTH_SECRET",
             "STATE_DB_URI",
         },
@@ -176,9 +176,7 @@ def test_discover_multi_path_shared_secret():
         },
     }
     workloads = [
-        _deployment(
-            "epistemic-graph", "platform", secret_ref="mock-epistemic-graph-secrets"
-        ),
+        _deployment("medulla", "platform", secret_ref="mock-medulla-secrets"),
         _deployment("arbora", "platform", secret_ref="mock-arbora-secrets"),
         _deployment("arbora-host", "platform", secret_ref="mock-arbora-secrets"),
     ] + [
@@ -321,7 +319,7 @@ def test_plan_single_consumer_no_shared_warning():
 def test_plan_shared_secret_has_batch_restart_and_multi_path_warning():
     es = [
         _external_secret(
-            "mock-epistemic-graph-secrets",
+            "mock-medulla-secrets",
             "platform",
             data_from_extract="scion-sdk/deployment",
         ),
@@ -333,14 +331,12 @@ def test_plan_shared_secret_has_batch_restart_and_multi_path_warning():
         _external_secret("mock-arbora-secrets", "platform", data_from_extract="arbora"),
     ]
     secret_keys = {
-        ("platform", "mock-epistemic-graph-secrets"): {"GRAPH_SERVICE_AUTH_SECRET"},
+        ("platform", "mock-medulla-secrets"): {"GRAPH_SERVICE_AUTH_SECRET"},
         ("apps", "mcp-engine-auth"): {"GRAPH_SERVICE_AUTH_SECRET"},
         ("platform", "mock-arbora-secrets"): {"GRAPH_SERVICE_AUTH_SECRET"},
     }
     workloads = [
-        _deployment(
-            "epistemic-graph", "platform", secret_ref="mock-epistemic-graph-secrets"
-        ),
+        _deployment("medulla", "platform", secret_ref="mock-medulla-secrets"),
         _deployment("arbora", "platform", secret_ref="mock-arbora-secrets"),
     ] + [
         _deployment(f"svc{i}-mcp", "apps", secret_ref="mcp-engine-auth")

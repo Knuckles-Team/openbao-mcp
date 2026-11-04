@@ -82,7 +82,7 @@ def register_sys_tools(mcp: FastMCP):
         client=Depends(get_client),
         ctx: Context | None = Field(default=None, description="MCP context"),
     ) -> dict:
-        """Natively ingest OpenBao secrets-engine METADATA into epistemic-graph.
+        """Natively ingest OpenBao secrets-engine METADATA into medulla.
 
         Lists mounted secrets engines via ``get_mounts`` and pushes them into the
         knowledge graph as typed ``:SecretMount`` nodes (plus a ``:VaultServer`` node
