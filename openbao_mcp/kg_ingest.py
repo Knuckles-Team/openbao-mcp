@@ -1,4 +1,4 @@
-"""Native epistemic-graph ingestion for OpenBao control-plane metadata.
+"""Native medulla ingestion for OpenBao control-plane metadata.
 
 Only whitelisted mount paths, engine types, accessors, policy names, and server metadata
 are accepted. Secret values, credentials, tokens, and unseal material are never read or
