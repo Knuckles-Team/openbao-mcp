@@ -23,3 +23,13 @@ class Api(SecretsApi, SysApi, Client):
             tls_profile=tls_profile,
             base_url=base_url,
         )
+
+
+class ToolSurfaceApi(SecretsApi, SysApi):
+    """The REST operations served as per-operation tools.
+
+    ``Api`` also carries the ported Go client (``Token``, ``SetToken``,
+    ``SetAddress``, ``RawRequest``...). Those are client plumbing, not OpenBao
+    operations: serving them handed any caller the connector's live token and
+    let it repoint the shared client. Only REST operations are tools.
+    """

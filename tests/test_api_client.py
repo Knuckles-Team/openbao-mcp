@@ -270,3 +270,14 @@ def test_permission_denied_carries_openbao_errors():
     client = _client_returning(_Resp(403, "x", payload={"errors": ["permission denied"]}))
     with pytest.raises(Exception, match="403: permission denied"):
         client.request("GET", "/v1/x")
+
+
+def test_tool_surface_serves_no_client_plumbing():
+    import inspect
+
+    from openbao_mcp.api_client import ToolSurfaceApi
+
+    public = {n for n, _ in inspect.getmembers(ToolSurfaceApi, inspect.isfunction) if not n.startswith("_")}
+    assert {"read_secret", "write_secret", "list_secrets", "get_health"} <= public
+    plumbing = {"Token", "SetToken", "ClearToken", "SetAddress", "RawRequest", "Clone", "CloneToken"}
+    assert not (plumbing & public), plumbing & public

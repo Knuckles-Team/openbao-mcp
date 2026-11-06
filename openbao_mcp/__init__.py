@@ -71,11 +71,11 @@ def __dir__() -> list[str]:
 
 from scion_sdk.connector import Connector
 
-from openbao_mcp.api_client import Api
+from openbao_mcp.api_client import ToolSurfaceApi
 from openbao_mcp.auth import get_client
 
 connector = Connector(
-    api=Api,
+    api=ToolSurfaceApi,
     get_client=get_client,
     tools="openbao_mcp.mcp_server",
     instructions="OpenBao MCP MCP Server - Managed dynamic operations.",
