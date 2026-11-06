@@ -261,13 +261,17 @@ def test_redirect_is_an_error_not_a_result():
 
 
 def test_html_success_is_an_error_not_a_result():
-    client = _client_returning(_Resp(200, "<html>hi</html>", {"content-type": "text/html"}))
+    client = _client_returning(
+        _Resp(200, "<html>hi</html>", {"content-type": "text/html"})
+    )
     with pytest.raises(Exception, match="non-JSON"):
         client.request("GET", "/v1/x")
 
 
 def test_permission_denied_carries_openbao_errors():
-    client = _client_returning(_Resp(403, "x", payload={"errors": ["permission denied"]}))
+    client = _client_returning(
+        _Resp(403, "x", payload={"errors": ["permission denied"]})
+    )
     with pytest.raises(Exception, match="403: permission denied"):
         client.request("GET", "/v1/x")
 
@@ -277,7 +281,19 @@ def test_tool_surface_serves_no_client_plumbing():
 
     from openbao_mcp.api_client import ToolSurfaceApi
 
-    public = {n for n, _ in inspect.getmembers(ToolSurfaceApi, inspect.isfunction) if not n.startswith("_")}
+    public = {
+        n
+        for n, _ in inspect.getmembers(ToolSurfaceApi, inspect.isfunction)
+        if not n.startswith("_")
+    }
     assert {"read_secret", "write_secret", "list_secrets", "get_health"} <= public
-    plumbing = {"Token", "SetToken", "ClearToken", "SetAddress", "RawRequest", "Clone", "CloneToken"}
+    plumbing = {
+        "Token",
+        "SetToken",
+        "ClearToken",
+        "SetAddress",
+        "RawRequest",
+        "Clone",
+        "CloneToken",
+    }
     assert not (plumbing & public), plumbing & public
