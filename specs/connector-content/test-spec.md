@@ -13,3 +13,4 @@ Each proving test above includes the refusal or error case that its row names. A
 ## Quality and release proof
 
 Run `uv run pytest tests` and `pre-commit run --all-files` from the repository root. A planned test is added by the code change that lands the row.
+| T-002 | `CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R002` | `tests/test_api_client.py` | Redirect, HTML and 4xx responses raise. |
