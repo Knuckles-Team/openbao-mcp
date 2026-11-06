@@ -4,8 +4,7 @@ ontology_source: openbao
 sync:
 - preset: openbao-mounts
   server: openbao-mcp
-  tool: openbao_mcp_sys
-  action: get_mounts
+  tool: openbao_get_mounts
   records_path: data
   id_field: accessor
   title_field: type

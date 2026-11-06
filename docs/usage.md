@@ -7,24 +7,23 @@ described in [Overview](overview.md).
 
 ## As an MCP server
 
-Once [deployed](deployment.md), the server registers action-routed tools across four
-namespaces, each toggled by its enable flag (`SECRETSTOOL`, `SYSTOOL`, `AUTHTOOL`,
+Once [deployed](deployment.md), the server registers one typed tool per operation across
+four namespaces, each toggled by its enable flag (`SECRETSTOOL`, `SYSTOOL`, `AUTHTOOL`,
 `SSHTOOL`):
 
-| Namespace | Tool | Actions |
-|---|---|---|
-| Secrets | `openbao_mcp_logical` | `read`, `write`, `delete`, `list`, `unwrap`, `write_bytes` |
-| Key-value | `openbao_mcp_kv` | `kv2_get`, `kv2_put`, `kv2_delete`, `kv2_patch`, `kv1_get`, `kv1_put`, `kv1_delete` |
-| System | `openbao_mcp_sys` | `get_health`, `get_mounts`, `enable_mount`, `init`, `seal`, `unseal`, `seal_status`, `leader`, … |
-| Authentication | `openbao_mcp_auth` | `login`, `mfa_login`, `mfa_validate`, `token_create`, `token_lookup`, `token_renew`, `token_revoke` |
-| SSH | `openbao_mcp_ssh` | `credential`, `sign_key`, `verify` |
+| Namespace | Tools |
+|---|---|
+| Secrets | `openbao_logical_read`, `openbao_logical_write`, `openbao_logical_write_bytes`, `openbao_logical_delete`, `openbao_logical_list`, `openbao_logical_unwrap`, `openbao_read_secret`, `openbao_write_secret`, `openbao_delete_secret`, `openbao_list_secrets` |
+| Key-value | `openbao_kv2_get`, `openbao_kv2_put`, `openbao_kv2_patch`, `openbao_kv2_delete`, `openbao_kv1_get`, `openbao_kv1_put`, `openbao_kv1_delete` |
+| System | `openbao_get_health`, `openbao_get_mounts`, `openbao_enable_mount`, `openbao_sys_init`, `openbao_sys_init_status`, `openbao_sys_seal`, `openbao_sys_unseal`, `openbao_sys_seal_status`, `openbao_sys_health`, `openbao_sys_leader`, `openbao_sys_ha_status`, `openbao_sys_raft_join`, `openbao_sys_raft_autopilot_state` |
+| Authentication | `openbao_auth_login`, `openbao_auth_mfa_login`, `openbao_auth_mfa_validate`, `openbao_auth_token_create`, `openbao_auth_token_lookup`, `openbao_auth_token_renew`, `openbao_auth_token_revoke` |
+| SSH | `openbao_ssh_credential`, `openbao_ssh_sign_key`, `openbao_ssh_verify` |
 
-Each tool takes an `action` plus a `params_json` JSON string of parameters.
-Example agent prompts that map onto these tools:
+Destructive tools take `confirm=true`. Example agent prompts that map onto these tools:
 
-- *"Read the secret at `secret/data/app/config`"* → `openbao_mcp_kv` (`kv2_get`)
-- *"Is the OpenBao server healthy and unsealed?"* → `openbao_mcp_sys` (`get_health`, `seal_status`)
-- *"Issue a short-lived SSH credential for role `web`"* → `openbao_mcp_ssh` (`credential`)
+- *"Read the secret at `secret/data/app/config`"* -> `openbao_kv2_get`
+- *"Is the OpenBao server healthy and unsealed?"* -> `openbao_get_health`, `openbao_sys_seal_status`
+- *"Issue a short-lived SSH credential for role `web`"* -> `openbao_ssh_credential`
 
 ## As a Python API
 

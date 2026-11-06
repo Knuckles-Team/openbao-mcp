@@ -1,6 +1,5 @@
-"""MCP tools for sys operations."""
+"""Typed MCP tools for OpenBao system operations (one tool per operation)."""
 
-from collections.abc import Callable
 from typing import Any
 
 from fastmcp import Context, FastMCP
@@ -8,74 +7,107 @@ from fastmcp.dependencies import Depends
 from pydantic import Field
 
 from openbao_mcp.auth import get_client
+from openbao_mcp.mcp._guard import CONFIRMATION_REQUIRED
 
-# Backwards-compatible methods mapped straight onto the legacy client:
-_SYS_LEGACY_ACTIONS: dict[str, Callable[[Any, dict], Any]] = {
-    "get_health": lambda client, kwargs: client.get_health(**kwargs),
-    "get_mounts": lambda client, kwargs: client.get_mounts(**kwargs),
-    "enable_mount": lambda client, kwargs: client.enable_mount(**kwargs),
-    "get_internal_openapi_spec": lambda client, kwargs: (
-        client.get_internal_openapi_spec(**kwargs)
-    ),
-}
-
-# Advanced Sys interface matching the Go API:
-_SYS_ADVANCED_ACTIONS: dict[str, Callable[[Any, dict], Any]] = {
-    "init": lambda client, kwargs: client.Sys().Init(kwargs.get("opts", {})),
-    "init_status": lambda client, kwargs: {"initialized": client.Sys().InitStatus()},
-    "seal": lambda client, kwargs: client.Sys().Seal(),
-    "unseal": lambda client, kwargs: client.Sys().Unseal(kwargs.get("shard", "")),
-    "seal_status": lambda client, kwargs: client.Sys().SealStatus(),
-    "health": lambda client, kwargs: client.Sys().Health(),
-    "leader": lambda client, kwargs: client.Sys().Leader(),
-    "ha_status": lambda client, kwargs: client.Sys().HAStatus(),
-    "raft_join": lambda client, kwargs: client.Sys().RaftJoin(kwargs.get("opts", {})),
-    "raft_autopilot_state": lambda client, kwargs: client.Sys().RaftAutopilotState(),
-}
-
-_SYS_ACTIONS: dict[str, Callable[[Any, dict], Any]] = {
-    **_SYS_LEGACY_ACTIONS,
-    **_SYS_ADVANCED_ACTIONS,
-}
-
-
-def _dispatch_sys_action(action: str, client, kwargs: dict) -> Any:
-    handler = _SYS_ACTIONS.get(action)
-    if handler is None:
-        raise ValueError(f"Unknown sys action: {action}")
-    return handler(client, kwargs)
+READ_ONLY = {"readOnlyHint": True, "idempotentHint": True}
+CHANGES_STATE = {"readOnlyHint": False, "destructiveHint": False}
+DESTRUCTIVE = {"readOnlyHint": False, "destructiveHint": True}
 
 
 def register_sys_tools(mcp: FastMCP):
-    """Register OpenBao MCP sys tools."""
+    """Register the OpenBao sys tools."""
 
-    @mcp.tool(tags={"sys"})
-    async def openbao_mcp_sys(
-        action: str = Field(
-            description=(
-                "Action: 'get_health', 'get_mounts', 'enable_mount', 'get_internal_openapi_spec', "
-                "'init', 'init_status', 'seal', 'unseal', 'seal_status', 'health', 'leader', "
-                "'ha_status', 'raft_join', 'raft_autopilot_state'"
-            )
-        ),
-        params_json: str = Field(
-            default="{}", description="JSON string of parameters."
-        ),
+    @mcp.tool(tags={"sys"}, annotations=READ_ONLY)
+    async def openbao_sys_init_status(
         client=Depends(get_client),
         ctx: Context | None = Field(default=None, description="MCP context"),
     ) -> dict:
-        """Manage OpenBao sys operations."""
-        if ctx:
-            await ctx.info("Executing sys operations...")
-        import json
+        """Report whether the OpenBao server is initialized."""
+        return {"initialized": client.Sys().InitStatus()}
 
-        try:
-            kwargs = json.loads(params_json)
-        except Exception:
-            return {"error": "Operation failed"}
+    @mcp.tool(tags={"sys"}, annotations=CHANGES_STATE)
+    async def openbao_sys_init(
+        opts: dict[str, Any] = Field(
+            description="Init request, e.g. secret_shares and secret_threshold."
+        ),
+        client=Depends(get_client),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> Any:
+        """Initialize a new OpenBao server and return its root token and unseal shards."""
+        return client.Sys().Init(opts)
 
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        return _dispatch_sys_action(action, client, kwargs)
+    @mcp.tool(tags={"sys"}, annotations=READ_ONLY)
+    async def openbao_sys_seal_status(
+        client=Depends(get_client),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> Any:
+        """Report the seal state, threshold and progress of the OpenBao server."""
+        return client.Sys().SealStatus()
+
+    @mcp.tool(tags={"sys"}, annotations=DESTRUCTIVE)
+    async def openbao_sys_seal(
+        confirm: bool = Field(
+            default=False, description="Must be true; set only after the person agrees."
+        ),
+        client=Depends(get_client),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> Any:
+        """Seal the OpenBao server. Every secret read fails until it is unsealed."""
+        if not confirm:
+            return CONFIRMATION_REQUIRED
+        return client.Sys().Seal()
+
+    @mcp.tool(tags={"sys"}, annotations=CHANGES_STATE)
+    async def openbao_sys_unseal(
+        shard: str = Field(description="One unseal key shard."),
+        client=Depends(get_client),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> Any:
+        """Submit one unseal key shard and return the resulting seal status."""
+        return client.Sys().Unseal(shard)
+
+    @mcp.tool(tags={"sys"}, annotations=READ_ONLY)
+    async def openbao_sys_health(
+        client=Depends(get_client),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> Any:
+        """Read the server health through the system client."""
+        return client.Sys().Health()
+
+    @mcp.tool(tags={"sys"}, annotations=READ_ONLY)
+    async def openbao_sys_leader(
+        client=Depends(get_client),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> Any:
+        """Read the current cluster leader."""
+        return client.Sys().Leader()
+
+    @mcp.tool(tags={"sys"}, annotations=READ_ONLY)
+    async def openbao_sys_ha_status(
+        client=Depends(get_client),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> Any:
+        """Read the high-availability node status."""
+        return client.Sys().HAStatus()
+
+    @mcp.tool(tags={"sys"}, annotations=CHANGES_STATE)
+    async def openbao_sys_raft_join(
+        opts: dict[str, Any] = Field(
+            description="Join request: leader_api_addr and the leader CA or unseal settings."
+        ),
+        client=Depends(get_client),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> Any:
+        """Join this node to a raft cluster."""
+        return client.Sys().RaftJoin(opts)
+
+    @mcp.tool(tags={"sys"}, annotations=READ_ONLY)
+    async def openbao_sys_raft_autopilot_state(
+        client=Depends(get_client),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> Any:
+        """Read the raft autopilot state: voters, health and failure tolerance."""
+        return client.Sys().RaftAutopilotState()
 
     @mcp.tool(tags={"sys", "kg"})
     async def openbao_ingest_mounts(

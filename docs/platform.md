@@ -105,6 +105,6 @@ docker compose -f docker/stack.compose.yml up -d
 ## Operate the backend
 
 With the server running and a valid `OPENBAO_TOKEN`, the
-[system tool](usage.md#as-an-mcp-server) (`openbao_mcp_sys`) drives initialization,
+[system tools](usage.md#as-an-mcp-server) (the `openbao_sys_*` tools) drive initialization,
 seal / unseal, and mount management, while the secrets and key-value tools read and
 write secrets against the engines the operator enable.
