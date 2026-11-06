@@ -88,4 +88,3 @@ Enable a secrets engine and read the API schema of the server. Contract steps, i
 1. `openbao_get_mounts`(no arguments)
 2. `openbao_enable_mount`(mount, mount_type)
 3. `openbao_get_internal_openapi_spec`(no arguments)
-
