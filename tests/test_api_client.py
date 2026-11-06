@@ -227,3 +227,73 @@ def test_full_sys_auth_and_ssh_apis():
     # SSH Helper API
     client.SSHHelper().Verify("my-otp")
     client.request.assert_called_with("POST", "/v1/ssh/verify", data={"otp": "my-otp"})
+
+
+class _Resp:
+    def __init__(self, status_code, text="", headers=None, payload=None):
+        self.status_code = status_code
+        self.text = text
+        self.headers = headers or {}
+        self._payload = payload
+
+    def json(self):
+        if self._payload is None:
+            raise ValueError("not json")
+        return self._payload
+
+
+def _client_returning(resp):
+    from openbao_mcp.api.api_client_base import ApiClientBase
+
+    client = ApiClientBase.__new__(ApiClientBase)
+    client.base_url = "http://bao.test"
+    client._session = MagicMock()
+    client._session.request.return_value = resp
+    return client
+
+
+def test_redirect_is_an_error_not_a_result():
+    client = _client_returning(
+        _Resp(308, "<html>308</html>", {"location": "https://bao.test/v1/x"})
+    )
+    with pytest.raises(Exception, match="redirect"):
+        client.request("GET", "/v1/x")
+
+
+def test_html_success_is_an_error_not_a_result():
+    client = _client_returning(
+        _Resp(200, "<html>hi</html>", {"content-type": "text/html"})
+    )
+    with pytest.raises(Exception, match="non-JSON"):
+        client.request("GET", "/v1/x")
+
+
+def test_permission_denied_carries_openbao_errors():
+    client = _client_returning(
+        _Resp(403, "x", payload={"errors": ["permission denied"]})
+    )
+    with pytest.raises(Exception, match="403: permission denied"):
+        client.request("GET", "/v1/x")
+
+
+def test_tool_surface_serves_no_client_plumbing():
+    import inspect
+
+    from openbao_mcp.api_client import ToolSurfaceApi
+
+    public = {
+        n
+        for n, _ in inspect.getmembers(ToolSurfaceApi, inspect.isfunction)
+        if not n.startswith("_")
+    }
+    assert {"read_secret", "write_secret", "list_secrets", "get_health"} <= public
+    plumbing = {
+        "Token",
+        "SetToken",
+        "ClearToken",
+        "SetAddress",
+        "RawRequest",
+        "Clone",
+        "CloneToken",
+    }
+    assert not (plumbing & public), plumbing & public

@@ -68,13 +68,31 @@ class ApiClientBase:
             json=data,
         )
 
+        if 300 <= response.status_code < 400:
+            raise Exception(
+                f"API error: {response.status_code} redirect to "
+                f"{response.headers.get('location', '?')}; OPENBAO_URL must be the "
+                "address that serves the API directly (a redirect is never a result)"
+            )
         if response.status_code >= 400:
-            raise Exception(f"API error: {response.status_code}")
+            raise Exception(f"API error: {response.status_code}{_api_errors(response)}")
 
         if response.status_code == 204 or not response.text.strip():
             return {"status": "success"}
 
         try:
             return response.json()
-        except Exception:
-            return {"status": "success", "text": response.text}
+        except Exception as exc:
+            raise Exception(
+                f"API error: {response.status_code} non-JSON response "
+                f"({response.headers.get('content-type', 'unknown')})"
+            ) from exc
+
+
+def _api_errors(response: httpx.Response) -> str:
+    """The OpenBao ``errors`` list of an error response, never the request."""
+    try:
+        errors = response.json().get("errors") or []
+    except Exception:
+        return ""
+    return f": {'; '.join(str(e) for e in errors)}" if errors else ""
