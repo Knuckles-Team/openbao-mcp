@@ -24,12 +24,12 @@ external boundaries.
   `register_auth_tools`, `register_secrets_tools`, `register_ssh_tools`, and
   `register_sys_tools`. The SDK tool-surface loader discovers these module
   attributes; keep the module boundary and registrar names stable.
-- `openbao_mcp/mcp/mcp_auth.py` owns `openbao_mcp_auth` for login, MFA, and
-  token actions. `openbao_mcp/mcp/mcp_secrets.py` owns
-  `openbao_mcp_logical` and `openbao_mcp_kv`; `openbao_mcp/mcp/mcp_ssh.py`
-  owns `openbao_mcp_ssh`; and `openbao_mcp/mcp/mcp_sys.py` owns
-  `openbao_mcp_sys` plus metadata-only `openbao_ingest_mounts`.
-  Preserve each action name, payload shape, and tool tag.
+- `openbao_mcp/mcp/mcp_auth.py` owns the typed `openbao_auth_*` login, MFA and
+  token tools. `openbao_mcp/mcp/mcp_secrets.py` owns the `openbao_logical_*` and
+  `openbao_kv1_*` / `openbao_kv2_*` tools; `openbao_mcp/mcp/mcp_ssh.py` owns the
+  `openbao_ssh_*` tools; and `openbao_mcp/mcp/mcp_sys.py` owns the
+  `openbao_sys_*` tools plus metadata-only `openbao_ingest_mounts`. Each
+  operation is its own typed tool; destructive ones take `confirm`.
 - `openbao_mcp/auth.py` reads `OPENBAO_URL` with
   `OPENBAO_MCP_BASE_URL` fallback, `OPENBAO_TOKEN`, and optional
   `OPENBAO_MCP_USERNAME`/`OPENBAO_MCP_PASSWORD`. `api_client_base.py` uses

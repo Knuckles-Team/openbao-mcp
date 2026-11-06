@@ -1,6 +1,5 @@
-"""MCP tools for secrets and logical operations."""
+"""Typed MCP tools for OpenBao logical and key-value operations (one tool per operation)."""
 
-from collections.abc import Callable
 from typing import Any
 
 from fastmcp import Context, FastMCP
@@ -8,159 +7,158 @@ from fastmcp.dependencies import Depends
 from pydantic import Field
 
 from openbao_mcp.auth import get_client
+from openbao_mcp.mcp._guard import CONFIRMATION_REQUIRED
 
+READ_ONLY = {"readOnlyHint": True, "idempotentHint": True}
+CHANGES_STATE = {"readOnlyHint": False, "destructiveHint": False}
+DESTRUCTIVE = {"readOnlyHint": False, "destructiveHint": True}
 
-def _logical_read(client, kwargs: dict) -> Any:
-    return client.Logical().Read(kwargs.get("path", ""))
-
-
-def _logical_write(client, kwargs: dict) -> Any:
-    return client.Logical().Write(kwargs.get("path", ""), kwargs.get("data", {}))
-
-
-def _logical_delete(client, kwargs: dict) -> Any:
-    return client.Logical().Delete(kwargs.get("path", ""))
-
-
-def _logical_list(client, kwargs: dict) -> Any:
-    return client.Logical().List(kwargs.get("path", ""))
-
-
-def _logical_unwrap(client, kwargs: dict) -> Any:
-    return client.Logical().Unwrap(kwargs.get("token", ""))
-
-
-def _logical_write_bytes(client, kwargs: dict) -> Any:
-    raw_data = kwargs.get("data_bytes", b"")
-    if isinstance(raw_data, str):
-        raw_data = raw_data.encode("utf-8")
-    return client.Logical().WriteBytes(kwargs.get("path", ""), raw_data)
-
-
-_LOGICAL_ACTIONS: dict[str, Callable[[Any, dict], Any]] = {
-    "read": _logical_read,
-    "write": _logical_write,
-    "delete": _logical_delete,
-    "list": _logical_list,
-    "unwrap": _logical_unwrap,
-    "write_bytes": _logical_write_bytes,
-}
-
-
-def _dispatch_logical_action(action: str, client, kwargs: dict) -> Any:
-    handler = _LOGICAL_ACTIONS.get(action)
-    if handler is None:
-        raise ValueError(f"Unknown logical action: {action}")
-    return handler(client, kwargs)
-
-
-def _kv2_get(client, kwargs: dict) -> Any:
-    return client.KVv2(kwargs.get("mount_path", "secret")).Get(
-        None, kwargs.get("secret_path", "")
-    )
-
-
-def _kv2_put(client, kwargs: dict) -> Any:
-    return client.KVv2(kwargs.get("mount_path", "secret")).Put(
-        None, kwargs.get("secret_path", ""), kwargs.get("data", {})
-    )
-
-
-def _kv2_delete(client, kwargs: dict) -> Any:
-    return client.KVv2(kwargs.get("mount_path", "secret")).Delete(
-        None, kwargs.get("secret_path", "")
-    )
-
-
-def _kv2_patch(client, kwargs: dict) -> Any:
-    return client.KVv2(kwargs.get("mount_path", "secret")).Patch(
-        None, kwargs.get("secret_path", ""), kwargs.get("new_data", {})
-    )
-
-
-def _kv1_get(client, kwargs: dict) -> Any:
-    return client.KVv1(kwargs.get("mount_path", "secret")).Get(
-        None, kwargs.get("secret_path", "")
-    )
-
-
-def _kv1_put(client, kwargs: dict) -> Any:
-    return client.KVv1(kwargs.get("mount_path", "secret")).Put(
-        None, kwargs.get("secret_path", ""), kwargs.get("data", {})
-    )
-
-
-def _kv1_delete(client, kwargs: dict) -> Any:
-    return client.KVv1(kwargs.get("mount_path", "secret")).Delete(
-        None, kwargs.get("secret_path", "")
-    )
-
-
-_KV_ACTIONS: dict[str, Callable[[Any, dict], Any]] = {
-    "kv2_get": _kv2_get,
-    "kv2_put": _kv2_put,
-    "kv2_delete": _kv2_delete,
-    "kv2_patch": _kv2_patch,
-    "kv1_get": _kv1_get,
-    "kv1_put": _kv1_put,
-    "kv1_delete": _kv1_delete,
-}
-
-
-def _dispatch_kv_action(action: str, client, kwargs: dict) -> Any:
-    handler = _KV_ACTIONS.get(action)
-    if handler is None:
-        raise ValueError(f"Unknown KV action: {action}")
-    return handler(client, kwargs)
+_CTX = Field(default=None, description="MCP context")
 
 
 def register_secrets_tools(mcp: FastMCP):
-    """Register OpenBao MCP secrets tools."""
+    """Register the OpenBao logical and KV tools."""
 
-    @mcp.tool(tags={"logical"})
-    async def openbao_mcp_logical(
-        action: str = Field(
-            description="Action to perform: 'read', 'write', 'delete', 'list', 'unwrap', 'write_bytes'"
-        ),
-        params_json: str = Field(
-            default="{}", description="JSON string of parameters."
+    @mcp.tool(tags={"logical"}, annotations=READ_ONLY)
+    async def openbao_logical_read(
+        path: str = Field(description="Full API path, for example secret/data/app."),
+        client=Depends(get_client),
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """Read any OpenBao API path through the logical client."""
+        return client.Logical().Read(path)
+
+    @mcp.tool(tags={"logical"}, annotations=CHANGES_STATE)
+    async def openbao_logical_write(
+        path: str = Field(description="Full API path to write."),
+        data: dict[str, Any] = Field(description="Request body."),
+        client=Depends(get_client),
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """Write a JSON body to any OpenBao API path."""
+        return client.Logical().Write(path, data)
+
+    @mcp.tool(tags={"logical"}, annotations=CHANGES_STATE)
+    async def openbao_logical_write_bytes(
+        path: str = Field(description="Full API path to write."),
+        data_bytes: str = Field(description="Raw request body, UTF-8 text."),
+        client=Depends(get_client),
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """Write a raw byte body to an OpenBao API path."""
+        return client.Logical().WriteBytes(path, data_bytes.encode("utf-8"))
+
+    @mcp.tool(tags={"logical"}, annotations=DESTRUCTIVE)
+    async def openbao_logical_delete(
+        path: str = Field(description="Full API path to delete."),
+        confirm: bool = Field(
+            default=False, description="Must be true; set only after the person agrees."
         ),
         client=Depends(get_client),
-        ctx: Context | None = Field(default=None, description="MCP context"),
-    ) -> dict:
-        """Manage OpenBao logical operations."""
-        if ctx:
-            await ctx.info("Executing logical operations...")
-        import json
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """Delete an OpenBao API path."""
+        if not confirm:
+            return CONFIRMATION_REQUIRED
+        return client.Logical().Delete(path)
 
-        try:
-            kwargs = json.loads(params_json)
-        except Exception:
-            return {"error": "Operation failed"}
+    @mcp.tool(tags={"logical"}, annotations=READ_ONLY)
+    async def openbao_logical_list(
+        path: str = Field(description="Full API path whose children are listed."),
+        client=Depends(get_client),
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """List the child keys under an OpenBao API path."""
+        return client.Logical().List(path)
 
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        return _dispatch_logical_action(action, client, kwargs)
+    @mcp.tool(tags={"logical"}, annotations=CHANGES_STATE)
+    async def openbao_logical_unwrap(
+        token: str = Field(description="The single-use wrapping token."),
+        client=Depends(get_client),
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """Unwrap a response-wrapping token and return the wrapped secret once."""
+        return client.Logical().Unwrap(token)
 
-    @mcp.tool(tags={"kv"})
-    async def openbao_mcp_kv(
-        action: str = Field(
-            description="Action: 'kv2_get', 'kv2_put', 'kv2_delete', 'kv2_patch', 'kv1_get', 'kv1_put', 'kv1_delete'"
-        ),
-        params_json: str = Field(
-            default="{}", description="JSON string of parameters."
+    @mcp.tool(tags={"kv"}, annotations=READ_ONLY)
+    async def openbao_kv2_get(
+        secret_path: str = Field(description="Secret path inside the mount."),
+        mount_path: str = Field(default="secret", description="KV v2 mount."),
+        client=Depends(get_client),
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """Read the latest version of a KV v2 secret."""
+        return client.KVv2(mount_path).Get(None, secret_path)
+
+    @mcp.tool(tags={"kv"}, annotations=CHANGES_STATE)
+    async def openbao_kv2_put(
+        secret_path: str = Field(description="Secret path inside the mount."),
+        data: dict[str, Any] = Field(description="The full secret data to store."),
+        mount_path: str = Field(default="secret", description="KV v2 mount."),
+        client=Depends(get_client),
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """Write a new version of a KV v2 secret, replacing its data."""
+        return client.KVv2(mount_path).Put(None, secret_path, data)
+
+    @mcp.tool(tags={"kv"}, annotations=CHANGES_STATE)
+    async def openbao_kv2_patch(
+        secret_path: str = Field(description="Secret path inside the mount."),
+        new_data: dict[str, Any] = Field(description="Keys to merge into the secret."),
+        mount_path: str = Field(default="secret", description="KV v2 mount."),
+        client=Depends(get_client),
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """Merge keys into a KV v2 secret and write a new version; other keys stay."""
+        return client.KVv2(mount_path).Patch(None, secret_path, new_data)
+
+    @mcp.tool(tags={"kv"}, annotations=DESTRUCTIVE)
+    async def openbao_kv2_delete(
+        secret_path: str = Field(description="Secret path inside the mount."),
+        mount_path: str = Field(default="secret", description="KV v2 mount."),
+        confirm: bool = Field(
+            default=False, description="Must be true; set only after the person agrees."
         ),
         client=Depends(get_client),
-        ctx: Context | None = Field(default=None, description="MCP context"),
-    ) -> dict:
-        """Manage OpenBao Key-Value v1 and v2 engines."""
-        if ctx:
-            await ctx.info("Executing KV operations...")
-        import json
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """Soft-delete the latest version of a KV v2 secret."""
+        if not confirm:
+            return CONFIRMATION_REQUIRED
+        return client.KVv2(mount_path).Delete(None, secret_path)
 
-        try:
-            kwargs = json.loads(params_json)
-        except Exception:
-            return {"error": "Operation failed"}
+    @mcp.tool(tags={"kv"}, annotations=READ_ONLY)
+    async def openbao_kv1_get(
+        secret_path: str = Field(description="Secret path inside the mount."),
+        mount_path: str = Field(default="secret", description="KV v1 mount."),
+        client=Depends(get_client),
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """Read a KV v1 secret."""
+        return client.KVv1(mount_path).Get(None, secret_path)
 
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        return _dispatch_kv_action(action, client, kwargs)
+    @mcp.tool(tags={"kv"}, annotations=CHANGES_STATE)
+    async def openbao_kv1_put(
+        secret_path: str = Field(description="Secret path inside the mount."),
+        data: dict[str, Any] = Field(description="The secret data to store."),
+        mount_path: str = Field(default="secret", description="KV v1 mount."),
+        client=Depends(get_client),
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """Write a KV v1 secret, replacing its data."""
+        return client.KVv1(mount_path).Put(None, secret_path, data)
+
+    @mcp.tool(tags={"kv"}, annotations=DESTRUCTIVE)
+    async def openbao_kv1_delete(
+        secret_path: str = Field(description="Secret path inside the mount."),
+        mount_path: str = Field(default="secret", description="KV v1 mount."),
+        confirm: bool = Field(
+            default=False, description="Must be true; set only after the person agrees."
+        ),
+        client=Depends(get_client),
+        ctx: Context | None = _CTX,
+    ) -> Any:
+        """Delete a KV v1 secret permanently."""
+        if not confirm:
+            return CONFIRMATION_REQUIRED
+        return client.KVv1(mount_path).Delete(None, secret_path)

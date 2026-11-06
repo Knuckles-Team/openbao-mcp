@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.9] - 2026-11-06
+
+### Changed
+- Connector surface: agent-definition prompts (operator, secrets steward, platform operator, access administrator), task skills, tool-use contracts for all 42 tools, data locations and roles; ontology classes extend core classes.
+- Require `scion-sdk>=0.9.0`; `uv.lock` relocked.
+- The action-routed `openbao_mcp_{sys,auth,kv,logical,ssh}` tools are replaced by one typed tool per operation (`openbao_sys_*`, `openbao_auth_*`, `openbao_kv1_*`, `openbao_kv2_*`, `openbao_logical_*`, `openbao_ssh_*`); destructive tools take `confirm`.
+
 ## [2.3.7] - 2026-10-30
 
 ### Changed

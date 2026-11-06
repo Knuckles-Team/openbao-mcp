@@ -10,7 +10,7 @@
 # OpenBao (HashiCorp Vault-compatible) deployment: servers, mounted secrets/auth engines,
 # and ACL policies. All classes and properties live in the shared `:` (kg#) namespace; only
 # the owl:Ontology node gets the per-package IRI. Backs the openbao-mcp tool surface
-# (openbao_mcp_sys / openbao_mcp_auth / openbao_mcp_kv / openbao_mcp_logical).
+# (the openbao_* tools).
 #
 # SECURITY INVARIANT: this ontology and its ingestion carry METADATA ONLY — mount paths,
 # engine types, policy names, server health. Secret VALUES (KV data, tokens, keys) are
@@ -18,17 +18,18 @@
 
 :VaultServer a owl:Class ;
     rdfs:label "Vault Server" ;
-    rdfs:comment "An OpenBao/Vault server (or cluster node) — its version, cluster identity and seal/HA status (openbao_mcp_sys action=health/seal_status/leader)." .
+    rdfs:comment "An OpenBao/Vault server (or cluster node) — its version, cluster identity and seal/HA status (openbao_sys_health, openbao_sys_seal_status, openbao_sys_leader)." ;
+    rdfs:subClassOf :Server .
 
 :SecretMount a owl:Class ;
     rdfs:label "Secret Mount" ;
-    rdfs:comment "A mounted secrets engine at a path (e.g. kv, transit, pki, database). METADATA only — path/type/accessor, never the secrets it stores (openbao_mcp_sys action=get_mounts)." .
+    rdfs:comment "A mounted secrets engine at a path (e.g. kv, transit, pki, database). METADATA only — path/type/accessor, never the secrets it stores (openbao_get_mounts)." ;
+    rdfs:subClassOf :Collection .
 
 :AuthMount a owl:Class ;
     rdfs:label "Auth Mount" ;
-    rdfs:comment "A mounted authentication method at a path (e.g. userpass, approle, token, oidc) — its path/type/accessor metadata." .
-
-:Policy a owl:Class .
+    rdfs:comment "A mounted authentication method at a path (e.g. userpass, approle, token, oidc) — its path/type/accessor metadata." ;
+    rdfs:subClassOf :Collection .
 
 
 # --- links (owl:ObjectProperty) ---

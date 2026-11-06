@@ -1,4 +1,6 @@
-"""MCP tools for SSH operations."""
+"""Typed MCP tools for OpenBao SSH operations (one tool per operation)."""
+
+from typing import Any
 
 from fastmcp import Context, FastMCP
 from fastmcp.dependencies import Depends
@@ -6,42 +8,50 @@ from pydantic import Field
 
 from openbao_mcp.auth import get_client
 
+CHANGES_STATE = {"readOnlyHint": False, "destructiveHint": False}
+
 
 def register_ssh_tools(mcp: FastMCP):
-    """Register OpenBao MCP SSH tools."""
+    """Register the OpenBao SSH tools."""
 
-    @mcp.tool(tags={"ssh"})
-    async def openbao_mcp_ssh(
-        action: str = Field(description="Action: 'credential', 'sign_key', 'verify'"),
-        params_json: str = Field(
-            default="{}", description="JSON string of parameters."
+    @mcp.tool(tags={"ssh"}, annotations=CHANGES_STATE)
+    async def openbao_ssh_credential(
+        role: str = Field(description="SSH role to issue a credential for."),
+        data: dict[str, Any] = Field(
+            default_factory=dict, description="Request fields such as ip and username."
+        ),
+        mount_point: str = Field(
+            default="ssh", description="SSH secrets engine mount."
         ),
         client=Depends(get_client),
         ctx: Context | None = Field(default=None, description="MCP context"),
-    ) -> dict:
-        """Manage OpenBao SSH and SSH Helper operations."""
-        if ctx:
-            await ctx.info("Executing SSH operations...")
-        import json
+    ) -> Any:
+        """Issue a one-time password or key credential from an SSH role."""
+        return client.SSHWithMountPoint(mount_point).Credential(role, data)
 
-        try:
-            kwargs = json.loads(params_json)
-        except Exception:
-            return {"error": "Operation failed"}
+    @mcp.tool(tags={"ssh"}, annotations=CHANGES_STATE)
+    async def openbao_ssh_sign_key(
+        role: str = Field(description="SSH CA role that signs the key."),
+        data: dict[str, Any] = Field(
+            description="Request fields: public_key, valid_principals, ttl."
+        ),
+        mount_point: str = Field(
+            default="ssh", description="SSH secrets engine mount."
+        ),
+        client=Depends(get_client),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> Any:
+        """Sign a public SSH key with the CA of a role and return the certificate."""
+        return client.SSHWithMountPoint(mount_point).SignKey(role, data)
 
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        mount_point = kwargs.get("mount_point", "ssh")
-        role = kwargs.get("role", "")
-        data = kwargs.get("data", {})
-
-        if action == "credential":
-            return client.SSHWithMountPoint(mount_point).Credential(role, data)
-
-        if action == "sign_key":
-            return client.SSHWithMountPoint(mount_point).SignKey(role, data)
-
-        if action == "verify":
-            otp = kwargs.get("otp", "")
-            return client.SSHHelperWithMountPoint(mount_point).Verify(otp)
-
-        raise ValueError(f"Unknown SSH action: {action}")
+    @mcp.tool(tags={"ssh"}, annotations={"readOnlyHint": True})
+    async def openbao_ssh_verify(
+        otp: str = Field(description="The one-time password to verify."),
+        mount_point: str = Field(
+            default="ssh", description="SSH secrets engine mount."
+        ),
+        client=Depends(get_client),
+        ctx: Context | None = Field(default=None, description="MCP context"),
+    ) -> Any:
+        """Verify an SSH one-time password and return the role and user it belongs to."""
+        return client.SSHHelperWithMountPoint(mount_point).Verify(otp)
