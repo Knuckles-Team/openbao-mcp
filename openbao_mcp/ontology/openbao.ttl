@@ -1,7 +1,8 @@
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix core: <https://knuckles-team.github.io/ontology/core#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix dc: <http://purl.org/dc/terms/> .
-@prefix : <http://knuckles.team/kg#> .
+@prefix : <https://knuckles-team.github.io/ontology/connector/openbao#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -19,17 +20,17 @@
 :VaultServer a owl:Class ;
     rdfs:label "Vault Server" ;
     rdfs:comment "An OpenBao/Vault server (or cluster node) — its version, cluster identity and seal/HA status (openbao_sys_health, openbao_sys_seal_status, openbao_sys_leader)." ;
-    rdfs:subClassOf :Server .
+    rdfs:subClassOf core:Server .
 
 :SecretMount a owl:Class ;
     rdfs:label "Secret Mount" ;
     rdfs:comment "A mounted secrets engine at a path (e.g. kv, transit, pki, database). METADATA only — path/type/accessor, never the secrets it stores (openbao_get_mounts)." ;
-    rdfs:subClassOf :Collection .
+    rdfs:subClassOf core:Collection .
 
 :AuthMount a owl:Class ;
     rdfs:label "Auth Mount" ;
     rdfs:comment "A mounted authentication method at a path (e.g. userpass, approle, token, oidc) — its path/type/accessor metadata." ;
-    rdfs:subClassOf :Collection .
+    rdfs:subClassOf core:Collection .
 
 
 # --- links (owl:ObjectProperty) ---
@@ -42,7 +43,7 @@
 :governedByPolicy a owl:ObjectProperty ;
     rdfs:label "governed by policy" ;
     rdfs:comment "Links a SecretMount or AuthMount to a Policy that governs access to its paths." ;
-    rdfs:range :Policy .
+    rdfs:range core:Policy .
 
 :leaderOf a owl:ObjectProperty ;
     rdfs:label "leader of" ;
@@ -102,7 +103,7 @@
     rdfs:domain :VaultServer ;
     rdfs:range xsd:string .
 
-<http://knuckles.team/kg/openbao> a owl:Ontology ;
+<https://knuckles-team.github.io/ontology/connector/openbao> a owl:Ontology ;
     rdfs:label "OpenBao Secrets Platform Ontology" ;
     rdfs:comment """OpenBao/Vault control-plane metadata model — servers/clusters, mounted
     secrets and auth engines, and ACL policies, with their mount and governance
