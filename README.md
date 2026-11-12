@@ -186,7 +186,7 @@ See [docs/overview.md](docs/overview.md) or [docs/concepts.md](docs/concepts.md)
 
 ## Architecture
 
-This package uses the standardized Agent-Utilities dynamic facade architecture:
+This package uses the standardized Meristem dynamic facade architecture:
 
 ```mermaid
 graph TD

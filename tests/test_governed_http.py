@@ -10,13 +10,13 @@ from openbao_mcp.api.api_client_full import Client
 
 def _install(monkeypatch, handler):
     seen = {}
-    real = sdk_http.create_http_client
+    real = sdk_http.build_http_client
 
     def build(options, **kwargs):
         seen["options"] = options
         return real(options, transport=httpx.MockTransport(handler))
 
-    monkeypatch.setattr(api_client_base, "create_http_client", build)
+    monkeypatch.setattr(api_client_base, "build_http_client", build)
     return seen
 
 
