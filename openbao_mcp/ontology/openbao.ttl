@@ -97,12 +97,6 @@
     rdfs:domain :VaultServer ;
     rdfs:range xsd:string .
 
-:version a owl:DatatypeProperty ;
-    rdfs:label "version" ;
-    rdfs:comment "The OpenBao/Vault server version string." ;
-    rdfs:domain :VaultServer ;
-    rdfs:range xsd:string .
-
 <https://knuckles-team.github.io/ontology/connector/openbao> a owl:Ontology ;
     rdfs:label "OpenBao Secrets Platform Ontology" ;
     rdfs:comment """OpenBao/Vault control-plane metadata model — servers/clusters, mounted

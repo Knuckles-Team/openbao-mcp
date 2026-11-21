@@ -48,7 +48,9 @@ def register_secrets_tools(mcp: FastMCP):
         """Write a raw byte body to an OpenBao API path."""
         return client.Logical().WriteBytes(path, data_bytes.encode("utf-8"))
 
-    @mcp.tool(tags={"logical"}, annotations=DESTRUCTIVE)
+    @mcp.tool(
+        tags={"logical"}, annotations={"readOnlyHint": False, "destructiveHint": True}
+    )
     async def openbao_logical_delete(
         path: str = Field(description="Full API path to delete."),
         confirm: bool = Field(
@@ -112,7 +114,7 @@ def register_secrets_tools(mcp: FastMCP):
         """Merge keys into a KV v2 secret and write a new version; other keys stay."""
         return client.KVv2(mount_path).Patch(None, secret_path, new_data)
 
-    @mcp.tool(tags={"kv"}, annotations=DESTRUCTIVE)
+    @mcp.tool(tags={"kv"}, annotations={"readOnlyHint": False, "destructiveHint": True})
     async def openbao_kv2_delete(
         secret_path: str = Field(description="Secret path inside the mount."),
         mount_path: str = Field(default="secret", description="KV v2 mount."),
@@ -148,7 +150,7 @@ def register_secrets_tools(mcp: FastMCP):
         """Write a KV v1 secret, replacing its data."""
         return client.KVv1(mount_path).Put(None, secret_path, data)
 
-    @mcp.tool(tags={"kv"}, annotations=DESTRUCTIVE)
+    @mcp.tool(tags={"kv"}, annotations={"readOnlyHint": False, "destructiveHint": True})
     async def openbao_kv1_delete(
         secret_path: str = Field(description="Secret path inside the mount."),
         mount_path: str = Field(default="secret", description="KV v1 mount."),

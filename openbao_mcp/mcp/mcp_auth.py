@@ -102,7 +102,9 @@ def register_auth_tools(mcp: FastMCP):
         """Extend a renewable token's lease."""
         return client.Auth().Token().Renew(token, increment)
 
-    @mcp.tool(tags={"auth"}, annotations=DESTRUCTIVE)
+    @mcp.tool(
+        tags={"auth"}, annotations={"readOnlyHint": False, "destructiveHint": True}
+    )
     async def openbao_auth_token_revoke(
         token: str = Field(
             description="The token to revoke together with its children."
