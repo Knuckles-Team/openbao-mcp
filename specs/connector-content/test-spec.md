@@ -15,3 +15,4 @@ Each proving test above includes the refusal or error case that its row names. A
 Run `uv run pytest tests` and `pre-commit run --all-files` from the repository root. A planned test is added by the code change that lands the row.
 | T-002 | `CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R002` | `tests/test_api_client.py` | Redirect, HTML and 4xx responses raise. |
 | T-003 | `CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R003` | `tests/test_api_client.py` | The tool surface has no client plumbing. |
+| T-004 | `CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R004` | `tests/test_ontology_extends_core.py::test_pack_declares_no_core_term` | The packaged Turtle redeclares no core class or property. |

@@ -34,6 +34,7 @@ The fleet operator and the engine rely on this behaviour of `openbao-mcp`: `pypr
 ## Requirements
 
 - **FR-001**: Default content. Rows: `CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R001`.
+- **FR-002**: The packaged ontology extends only the core ontology and redeclares no core term (`CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R004`).
 
 ## Success Criteria
 
@@ -49,3 +50,4 @@ The fleet operator and the engine rely on this behaviour of `openbao-mcp`: `pypr
 | Label | Rows | Design section | Test ID | Evidence |
 |---|---|---|---|---|
 | FR-001 | `CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R001` | plan.md Production caller chain | T-001 | tests/test_default_content_surfaces.py::test_default_content_surfaces |
+| FR-002 | `CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R004` | plan.md Production caller chain | T-004 | tests/test_ontology_extends_core.py::test_pack_declares_no_core_term |
