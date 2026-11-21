@@ -16,3 +16,4 @@ Run `uv run pytest tests` and `pre-commit run --all-files` from the repository r
 | T-002 | `CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R002` | `tests/test_api_client.py` | Redirect, HTML and 4xx responses raise. |
 | T-003 | `CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R003` | `tests/test_api_client.py` | The tool surface has no client plumbing. |
 | T-004 | `CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R004` | `tests/test_ontology_extends_core.py::test_pack_declares_no_core_term` | The packaged Turtle redeclares no core class or property. |
+| T-005 | `CONN-OPENBAO-MCP-CONNECTOR-CONTENT-R005` | `tests/test_destructive_declaration.py::test_destructive_tools_declare_the_destructive_hint` | The four revoke and delete tools carry the destructive hint. |
