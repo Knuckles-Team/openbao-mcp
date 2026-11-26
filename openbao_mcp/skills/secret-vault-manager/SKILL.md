@@ -1,15 +1,8 @@
 ---
 name: secret-vault-manager
 skill_type: skill
-description: >
-  Secret Vault Manager atomic skill. Performs unsealing, initialization,
-  secrets engine mounting, and KV secrets write/read operations on OpenBao (Vault) using
-  openbao-mcp — including autonomous, blast-radius-aware CREDENTIAL ROTATION with a
-  safe dry-run plan by default, coordinated multi-consumer cutover for a secret shared
-  across services (e.g. an HMAC secret consumed by an engine + a whole MCP fleet), and
-  automatic rollback to the prior KV version on a failed verification. Use when a
-  credential is exposed/compromised and needs rotating, not just when reading/writing a
-  known secret.
+description: >-
+  Initialize, unseal, mount and read or write KV secrets on OpenBao through openbao-mcp, and rotate a compromised credential end to end with a dry-run plan by default and automatic rollback. Use when a credential is exposed and needs rotating, or when a vault must be set up.
 domain: infrastructure
 tags:
   - vault
@@ -25,6 +18,8 @@ metadata:
 ---
 
 # Secret Vault Manager Skill
+
+Scope: Secret Vault Manager atomic skill. Performs unsealing, initialization, secrets engine mounting, and KV secrets write/read operations on OpenBao (Vault) using openbao-mcp — including autonomous, blast-radius-aware CREDENTIAL ROTATION with a safe dry-run plan by default, coordinated multi-consumer cutover for a secret shared across services (e.g. an HMAC secret consumed by an engine + a whole MCP fleet), and automatic rollback to the prior KV version on a failed verification. Use when a credential is exposed/compromised and needs rotating, not just when reading/writing a known secret.
 
 Stateless atomic operation to configure root credentials, manage initialization phases, access path-level secrets, and **rotate a compromised credential end-to-end** in OpenBao/Vault engines.
 
@@ -49,6 +44,22 @@ Stateless atomic operation to configure root credentials, manage initialization 
   provider-issued credentials). **Read this before executing a rotation.**
 
 ## Steps
+
+1. Check the server with `openbao_sys_seal_status`() and `openbao_sys_init_status`(). Verify the response shows `initialized: true` and `sealed: false`, otherwise initialize or unseal first.
+2. Read the current secret object with `openbao_read_secret`(mount, path) before any write. Verify the response lists every existing key so the write can merge instead of replace.
+3. Write the merged object back in one call with `openbao_write_secret`(mount, path, secret_data). Verify a second `openbao_read_secret`(mount, path) shows the new version with all prior keys intact.
+4. To rotate a credential, run `python scripts/rotate_secret.py plan --credential-key <KEY>`. Verify the output lists every source path, ExternalSecret and consumer, and whether `is_shared` is set.
+5. After explicit human approval of the blast radius, run `python scripts/rotate_secret.py execute --credential-key <KEY> --confirm`. Verify every consumer reports ready and the output shows no rollback.
+
+## Failure recovery
+
+| Failure | Cause | Recovery |
+|---------|-------|----------|
+| Write returns permission denied | Token lacks the path policy or the server is sealed | Check `openbao_sys_seal_status`(), unseal if needed, and log in with a token whose policy covers the path |
+| Keys vanished after a write | KV v2 replaced the version with a partial object | Run `python scripts/rotate_secret.py rollback --credential-key <KEY> --confirm`, or read the prior version with `openbao_read_secret`(mount, path) and write it back whole |
+| `execute` refuses to run | Missing `--confirm`, or a provider-issued credential without `--new-value-file` | Add `--confirm`, and for provider-issued values mint the credential first and pass `--new-value-file <path>` |
+
+## Procedure detail
 
 ### Step 1: Health & Seal Check
 Check seal status and initialization state on the vault server endpoints.
