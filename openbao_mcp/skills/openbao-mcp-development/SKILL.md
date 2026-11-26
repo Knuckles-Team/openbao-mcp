@@ -64,6 +64,22 @@ external boundaries.
    Pages run, check `/spec-delivery/`, its `index.html`, and `snapshot.json`
    over HTTPS and record the snapshot revision.
 
+## Steps
+
+1. Find the owning spec row with `git grep -n "<term>" -- specs`. Verify a CONN-OPENBAO-MCP row id matches the change.
+2. Edit the existing connector seam named in the repository map above. Verify with `git diff --stat` that only intended paths changed.
+3. Run the focused tests with `uv run --locked --extra test pytest -q tests/test_mcp_server.py tests/test_api_client.py`. Verify they pass without a live OpenBao server.
+4. Run `uvx pre-commit run --all-files`. Verify every hook reports Passed.
+5. Stage reviewed paths with `git add -- <path>` and commit with a `Spec:` trailer in the final paragraph. Verify `git diff --cached --name-status` lists only those paths.
+
+## Failure recovery
+
+| Failure | Cause | Recovery |
+|---------|-------|----------|
+| `uv sync --locked` fails | `uv.lock` out of step with `pyproject.toml` | Run `uv lock`, review the lock diff, and rerun `uv sync --locked` |
+| A hook rewrites files | A formatting or spelling gate fixed them | Review `git diff`, stage the fixed paths with `git add -- <path>`, and commit again |
+| A test needs a live server | It bypasses the existing fakes | Switch it to the fake client fixture under `tests/` |
+
 ## Focused development commands
 
 From the repository root:

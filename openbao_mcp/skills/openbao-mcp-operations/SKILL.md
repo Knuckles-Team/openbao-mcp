@@ -19,6 +19,22 @@ Server operations act on the OpenBao API at BAO_ADDR. Check status first: most f
 - Seal and token revocation are destructive; ask first.
 - Never print tokens, unseal shards or secret values.
 
+## Steps
+
+1. Read the server state with `openbao_sys_seal_status`() and `openbao_sys_init_status`(). Verify the response shows whether the server is initialized and sealed before any change.
+2. For a new server, run `openbao_sys_init`(opts) once. Verify the response returns the unseal shards, and keep them out of logs and output.
+3. Unseal with `openbao_sys_unseal`(shard) once per shard. Verify `openbao_sys_seal_status`() reports `sealed: false`.
+4. Confirm cluster health with `openbao_sys_health`() and `openbao_sys_raft_autopilot_state`(). Verify a leader is reported and every raft server is healthy.
+5. For an emergency seal, ask the person first and call `openbao_sys_seal`(confirm=true). Verify `openbao_sys_seal_status`() reports `sealed: true`.
+
+## Failure recovery
+
+| Failure | Cause | Recovery |
+|---------|-------|----------|
+| Calls fail with a connection error | `BAO_ADDR` is wrong or the server is down | Set `BAO_ADDR` to the server address and confirm with `openbao_get_health`() |
+| `openbao_sys_unseal` keeps reporting sealed | Fewer shards supplied than the threshold | Call `openbao_sys_unseal`(shard) with the remaining shards until `openbao_sys_seal_status`() shows `sealed: false` |
+| `openbao_sys_seal` refuses | `confirm=true` was not passed | Get the person's agreement, then call `openbao_sys_seal`(confirm=true) |
+
 ## Task workflows
 
 ### check-server-health
